@@ -25,7 +25,11 @@ $(function () {
         cos = cos.slice(1);
 
         sin.push([(globalIndex + 140) * chartStep, Math.sin((globalIndex + 140) * chartStep)]);
-        cos.push([(globalIndex + 140) * chartStep, Math.cos((globalIndex + 140) * chartStep)]);
+        if (globalIndex % 50 < 30) {
+            cos.push([(globalIndex + 140) * chartStep, Math.cos((globalIndex + 140) * chartStep)]);
+        } else {
+            cos.push(NaN);
+        }
 
         globalIndex++;
     }
