@@ -9,14 +9,18 @@
     <script language="javascript" type="text/javascript" src="jquery.flot.js"></script>
     <script language="javascript" type="text/javascript" src="jquery.flot.symbol.js"></script>
     <script language="javascript" type="text/javascript" src="jquery.flot.cursors.js"></script>
+    <script type="text/javascript" type="text/javascript" src="lib/cbuffer.js"></script>
+    <script type="text/javascript" type="text/javascript" src="historyBuffer.js"></script>
     <script type="text/javascript" type="text/javascript" src="charting.js"></script>
+
 </head>
 
 <body>
     <div id="header">
-        <h2>Flot cursors</h2>
+        <h2>Flot charting</h2>
     </div>
-    <div id="content">
+    <div id="content" style="overflow: hidden;">
+        <div id="plotLegend" class="demo-legend"></div>
         <div class="demo-container">
             <div id="placeholder" class="demo-placeholder"></div>
         </div>

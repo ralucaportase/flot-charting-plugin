@@ -71,6 +71,4 @@ describe('History Buffer', function () {
 
         expect(hb.toArray()).toEqual([2, 3, 4]);
     });
-
-
 });

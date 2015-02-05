@@ -1,53 +1,39 @@
-/*global jQuery, $*/
+/*global jQuery, $, HistoryBuffer*/
 /*jshint browser: true*/
 
 $(function () {
     'use strict';
     var plot;
     var offset = 0.0;
-    var sin = [],
-        cos = [];
+    var buffer = new HistoryBuffer(1024, 2);
     var globalIndex = 0;
     var chartLength = 14,
         chartStep = 0.1;
 
-    function createData() {
-        sin = [];
-        cos = [];
-        for (var i = 0; i < chartLength; i += chartStep) {
-            sin.push([i, Math.sin(i)]);
-            cos.push([i, Math.cos(i)]);
-        }
-    }
+    function createData() {}
 
     function updateData() {
-        sin = sin.slice(1);
-        cos = cos.slice(1);
+        var sin, cos;
 
-        sin.push([(globalIndex + 140) * chartStep, Math.sin((globalIndex + 140) * chartStep)]);
+        sin = Math.sin((globalIndex + 140) * chartStep);
         if (globalIndex % 50 < 30) {
-            cos.push([(globalIndex + 140) * chartStep, Math.cos((globalIndex + 140) * chartStep)]);
+            cos = Math.cos((globalIndex + 140) * chartStep);
         } else {
-            cos.push(NaN);
+            cos = NaN;
         }
 
         globalIndex++;
+
+        buffer.push([sin, cos]);
     }
 
     function updateChart() {
         requestAnimationFrame(updateChart);
         updateData();
 
-        plot.setData([
-            {
-                data: sin,
-                label: "sin(x)"
-                },
-            {
-                data: cos,
-                label: "cos(x)"
-                }
-            ]);
+        plot.setData([{
+            historyBuffer: buffer
+        }]);
 
         plot.setupGrid();
         plot.draw();
@@ -56,12 +42,7 @@ $(function () {
     updateData();
     plot = $.plot("#placeholder", [
         {
-            data: sin,
-            label: "sin(x)"
-        },
-        {
-            data: cos,
-            label: "cos(x)"
+            historyBuffer: buffer,
         }
     ], {
         series: {
@@ -69,19 +50,7 @@ $(function () {
                 show: true
             }
         },
-        cursors: [
-            {
-                name: 'Red cursor',
-                mode: 'x',
-                color: 'red',
-                showIntersections: false,
-                showLabel: true,
-                symbol: 'triangle',
-                position: {
-                    relativeX: 200,
-                    relativeY: 300
-                }
-            },
+        disablecursors: [
             {
                 name: 'Blue cursor',
                 mode: 'xy',
@@ -93,19 +62,6 @@ $(function () {
                     relativeX: 400,
                     relativeY: 20
                 }
-            },
-            {
-                name: 'Green cursor',
-                mode: 'y',
-                color: 'green',
-                showIntersections: true,
-                symbol: 'cross',
-                showValuesRelativeToSeries: 0,
-                showLabel: true,
-                position: {
-                    relativeX: 100,
-                    relativeY: 200
-                }
             }
         ],
         grid: {
@@ -116,6 +72,9 @@ $(function () {
         yaxis: {
             min: -1.2,
             max: 1.2
+        },
+        legend: {
+            show: false
         }
     });
 
