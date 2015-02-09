@@ -8,6 +8,7 @@ $(function (global) {
         this.capacity = capacity || 1024;
         this.width = width || 1;
         this.buffer = new CBuffer(capacity); /* circular buffer */
+        this.count = 0;
     };
 
     HistoryBuffer.prototype.setCapacity = function (newCapacity) {
@@ -23,6 +24,7 @@ $(function (global) {
 
     HistoryBuffer.prototype.push = function (item) {
         this.buffer.push(item);
+        this.count++;
     };
 
     HistoryBuffer.prototype.appendArray = function (arr) {
@@ -38,6 +40,26 @@ $(function (global) {
         var buffer = this.buffer;
 
         return buffer.toArray();
+    };
+
+    HistoryBuffer.prototype.toSeries = function (index) {
+        // TO DO make the implementation fast
+        var buffer = this.buffer;
+        var j;
+
+        var data = [];
+
+        var start = Math.max(0, this.count - this.capacity);
+
+        for (var i = 0; i < buffer.size; i++) {
+            if (this.width > 1) {
+                data.push([i + start, buffer.get(i)[index]]);
+            } else {
+                data.push([i + start, buffer.get(i)]);
+            }
+        }
+
+        return data;
     };
 
     if (typeof module === 'object' && module.exports) module.exports = HistoryBuffer;

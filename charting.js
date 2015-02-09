@@ -5,7 +5,7 @@ $(function () {
     'use strict';
     var plot;
     var offset = 0.0;
-    var buffer = new HistoryBuffer(1024, 2);
+    var buffer = new HistoryBuffer(256, 2);
     var globalIndex = 0;
     var chartLength = 14,
         chartStep = 0.1;
@@ -31,26 +31,21 @@ $(function () {
         requestAnimationFrame(updateChart);
         updateData();
 
-        plot.setData([{
-            historyBuffer: buffer
-        }]);
+        plot.setData([[], []]);
 
         plot.setupGrid();
         plot.draw();
     }
 
     updateData();
-    plot = $.plot("#placeholder", [
-        {
-            historyBuffer: buffer,
-        }
-    ], {
+    plot = $.plot("#placeholder", [[], []], {
         series: {
+            historyBuffer: buffer,
             lines: {
                 show: true
             }
         },
-        disablecursors: [
+        disabledcursors: [
             {
                 name: 'Blue cursor',
                 mode: 'xy',
