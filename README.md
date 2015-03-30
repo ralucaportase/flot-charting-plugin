@@ -12,7 +12,7 @@ How to use
 
 Once included in the webpage the plugin is activated by specifing a history buffer to use as a data series
 
-    var buffer = new HistoryBuffer(256, 2);
+    var buffer = new HistoryBuffer(256, 1); // 256 sample, and a single data serie.
 
     plot = $.plot("#placeholder", [], {
         series: {
