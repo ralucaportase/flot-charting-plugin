@@ -27,10 +27,11 @@ describe('Flot charting: ', function () {
             }
         });
 
+        jasmine.clock().tick(1);
         expect(plot.getData()[0].data).toEqual([[0, 33]]);
     });
 
-    it('should be keep track of the total number of elements introduced in the buffer', function () {
+    it('should keep track of the total number of elements introduced in the buffer', function () {
         var hb = new HistoryBuffer(1, 1);
         hb.push(33);
         hb.push(34);

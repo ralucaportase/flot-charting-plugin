@@ -4,75 +4,62 @@
 $(function () {
     'use strict';
     var plot;
-    var offset = 0.0;
     var buffer = new HistoryBuffer(256, 2);
     var globalIndex = 0;
-    var chartLength = 14,
-        chartStep = 0.1;
-
-    function createData() {}
+    var chartStep = 0.1;
 
     function updateData() {
         var sin, cos;
 
-        sin = Math.sin((globalIndex + 140) * chartStep);
-        if (globalIndex % 50 < 30) {
-            cos = Math.cos((globalIndex + 140) * chartStep);
-        } else {
-            cos = NaN;
-        }
-
+        sin = Math.sin(globalIndex * chartStep);
+        cos = Math.cos(globalIndex * chartStep);
         globalIndex++;
 
         buffer.push([sin, cos]);
     }
 
     function updateChart() {
-        requestAnimationFrame(updateChart);
+        setTimeout(updateChart, 32);
         updateData();
-
-        plot.setData([[], []]);
-
-        plot.setupGrid();
-        plot.draw();
     }
 
-    updateData();
-    plot = $.plot("#placeholder", [[], []], {
+    plot = $.plot("#placeholder", [], {
         series: {
             historyBuffer: buffer,
             lines: {
                 show: true
             }
         },
-        disabledcursors: [
-            {
-                name: 'Blue cursor',
-                mode: 'xy',
-                color: 'blue',
-                showIntersections: true,
-                snapToPlot: 1,
-                symbol: 'diamond',
-                position: {
-                    relativeX: 400,
-                    relativeY: 20
-                }
-            }
-        ],
-        grid: {
-            hoverable: true,
-            clickable: true,
-            autoHighlight: false
-        },
-        yaxis: {
-            min: -1.2,
-            max: 1.2
-        },
         legend: {
             show: false
-        }
+        },
+        cursors: [
+            {
+                name: 'Orange',
+                mode: 'xy',
+                color: '#e0a216',
+                position: {
+                    relativeX: 100,
+                    relativeY: 100,
+                },
+                showLabel: true,
+                snapToPlot: 0,
+                symbol: 'cross'
+            },
+            {
+                name: 'Blue',
+                mode: 'xy',
+                color: '#5593c1',
+                position: {
+                    relativeX: 300,
+                    relativeY: 200,
+                },
+                showLabel: true,
+                snapToPlot: 1,
+                symbol: 'triangle'
+            }
+        ]
     });
 
-    createData();
     updateChart();
 });

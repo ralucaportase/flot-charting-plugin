@@ -25,6 +25,9 @@ $(function (global) {
     HistoryBuffer.prototype.push = function (item) {
         this.buffer.push(item);
         this.count++;
+        if (this.callOnChange) {
+            this.callOnChange();
+        }
     };
 
     HistoryBuffer.prototype.appendArray = function (arr) {
@@ -60,6 +63,10 @@ $(function (global) {
         }
 
         return data;
+    };
+
+    HistoryBuffer.prototype.onChange = function (f) {
+        this.callOnChange = f;
     };
 
     if (typeof module === 'object' && module.exports) module.exports = HistoryBuffer;
