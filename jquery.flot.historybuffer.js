@@ -46,7 +46,7 @@ $(function (global) {
     HistoryBuffer.prototype.populateAccelerationTree = function () {
         var buffer = this.buffer;
         var node;
-        var currentCount = 1;
+        var currentCount = 0;
 
         this.tree.levels.push(new TreeLevel(this, 1));
 
@@ -54,17 +54,17 @@ $(function (global) {
             return;
         }
 
-        var max = buffer.get(0),
-            min = buffer.get(0);
+        var max, min;
 
-        for (var i = 1; i < buffer.size; i++) {
+        for (var i = 0; i < buffer.size; i++) {
             var val = buffer.get(i);
-            if (val > max) {
-                max = val;
-            }
 
-            if (val < min) {
+            if (currentCount === 0) {
+                max = val;
                 min = val;
+            } else {
+                if (val > max) max = val;
+                if (val < min) min = val;
             }
 
             currentCount++;
@@ -75,7 +75,7 @@ $(function (global) {
 
                 node.max = max;
                 node.min = min;
-                this.tree.levels.push(node);
+                this.tree.levels[0].nodes.push(node);
             }
         }
 
