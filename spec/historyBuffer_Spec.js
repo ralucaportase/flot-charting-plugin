@@ -71,4 +71,25 @@ describe('History Buffer', function () {
 
         expect(hb.toArray()).toEqual([2, 3, 4]);
     });
+
+    it('should have an acceleration tree', function () {
+        var hb = new HistoryBuffer(128);
+
+        expect(hb.tree).toEqual(jasmine.any(Object));
+    });
+
+    it('should populate the acceleration tree properly', function () {
+        var hb = new HistoryBuffer(10);
+
+        hb.appendArray([1, 2, 3]);
+
+        hb.populateAccelerationTree();
+
+        expect(hb.tree.depth).toEqual(1);
+        expect(hb.tree.levels).toEqual(jasmine.any(Array));
+        expect(hb.tree.levels.length).toEqual(1);
+        expect(hb.tree.levels[0].nodes.length).toBe(1);
+        expect(hb.tree.levels[0].nodes[0].min).toBe(1);
+        expect(hb.tree.levels[0].nodes[0].max).toBe(3);
+    });
 });
