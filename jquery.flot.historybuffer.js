@@ -1,3 +1,8 @@
+/* history buffers datastructure for charting.
+
+Copyright (c) 2007-2015 National Instruments
+Licensed under the MIT license.
+*/
 /*globals $, CBuffer, module*/
 
 $(function (global) {
@@ -31,11 +36,14 @@ $(function (global) {
     };
 
     HistoryBuffer.prototype.appendArray = function (arr) {
-        // TO DO make the implementation fast
-        var buffer = this.buffer;
-        arr.forEach(function (item) {
-            buffer.push(item);
-        });
+        for (var i = 0; i < arr.length; i++ ) { 
+            this.buffer.push(arr[i]);
+        };
+        this.count += arr.length;
+
+        if (this.callOnChange) {
+            this.callOnChange();
+        }  
     };
 
     HistoryBuffer.prototype.toArray = function () {
