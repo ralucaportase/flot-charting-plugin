@@ -35,12 +35,18 @@ $(function (global) {
     };
 
     HistoryBuffer.prototype.buildEmptyAccelerationTree = function () {
+        var depth = Math.ceil(Math.log(this.capacity) / Math.log(branchFactor)) - 1;
+        if (depth < 1)
+            depth = 1;
         var tree = {
-            depth: 1,
+            depth: depth,
             levels: []
         };
 
         this.tree = tree;
+        for (var i = 0; i < depth; i++) {
+            this.tree.levels.push(new TreeLevel(this, i + 1));
+        }
     };
 
     HistoryBuffer.prototype.populateAccelerationTree = function () {
@@ -48,14 +54,13 @@ $(function (global) {
         var node;
         var currentCount = 0;
 
-        this.tree.levels.push(new TreeLevel(this, 1));
-
         if (buffer.size === 0) {
             return;
         }
 
         var max, min;
 
+        // populate the first level
         for (var i = 0; i < buffer.size; i++) {
             var val = buffer.get(i);
 
@@ -85,6 +90,44 @@ $(function (global) {
             node.max = max;
             node.min = min;
             this.tree.levels[0].nodes.push(node);
+        }
+
+        // populate higher levels
+        for (var j = 1; j < this.tree.depth; j++) {
+            var baseLevel = this.tree.levels[j - 1];
+            var currentLevel = this.tree.levels[j];
+
+            currentCount = 0;
+
+            for (i = 0; i < baseLevel.nodes.length; i++) {
+                var cNode = baseLevel.nodes[i];
+                if (currentCount === 0) {
+                    max = cNode.max;
+                    min = cNode.min;
+                } else {
+                    if (cNode.max > max) max = cNode.max;
+                    if (cNode.min < min) min = cNode.min;
+                }
+
+                currentCount++;
+
+                if (currentCount === branchFactor) {
+                    currentCount = 0;
+                    node = new TreeNode();
+
+                    node.max = max;
+                    node.min = min;
+                    this.tree.levels[j].nodes.push(node);
+                }
+            }
+
+            if (currentCount !== 0) {
+                node = new TreeNode();
+
+                node.max = max;
+                node.min = min;
+                this.tree.levels[j].nodes.push(node);
+            }
         }
     };
 
