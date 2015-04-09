@@ -193,6 +193,44 @@ $(function (global) {
         this.callOnChange = f;
     };
 
+    HistoryBuffer.prototype.firstIndex = function () {
+        return Math.max(0, this.count - this.capacity);
+    };
+
+    HistoryBuffer.prototype.lastIndex = function () {
+        return this.firstIndex() + this.buffer.size;
+    };
+
+    HistoryBuffer.prototype.query = function (start, end, step) {
+        var buffer = this.buffer;
+        var j;
+
+        var data = [];
+
+        var firstIndex = this.firstIndex();
+        var lastIndex = this.lastIndex();
+
+        if (start < firstIndex) {
+            start = firstIndex;
+        }
+        if (start > lastIndex) {
+            start = lastIndex;
+        }
+
+        if (end < firstIndex) {
+            end = firstIndex;
+        }
+        if (end > lastIndex) {
+            end = lastIndex;
+        }
+
+        for (var i = start - firstIndex; i < end - firstIndex; i++) {
+            data.push([i + firstIndex, buffer.get(i)]);
+        }
+
+        return data;
+    };
+
     if (typeof module === 'object' && module.exports) module.exports = HistoryBuffer;
     else global.HistoryBuffer = HistoryBuffer;
 }(this));

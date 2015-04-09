@@ -4,20 +4,6 @@
 describe('History Buffer', function () {
     'use strict';
 
-    var plot;
-
-    beforeEach(function () {
-        jasmine.clock().install();
-    });
-
-    afterEach(function () {
-        if (plot) {
-            plot.shutdown();
-        }
-        $('#placeholder').empty();
-        jasmine.clock().uninstall();
-    });
-
     it('should have a capacity property', function () {
         var hb = new HistoryBuffer(10);
 
