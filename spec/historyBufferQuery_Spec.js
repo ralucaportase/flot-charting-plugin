@@ -1,6 +1,8 @@
 /* global $, describe, it, xit, after, beforeEach, afterEach, expect, jasmine, spyOn, HistoryBuffer */
 /* jshint browser: true*/
 
+/* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js */
+
 describe('History Buffer Query', function () {
     'use strict';
 
@@ -36,4 +38,16 @@ describe('History Buffer Query', function () {
         expect(hb.query(0, 3, 1)).toEqual([[2, 2]]);
     });
 
+    it('should return a decimated series for big buffers', function () {
+        var size = 32768;
+        var hb = new HistoryBuffer(size);
+
+        for (var i = 0; i < size; i++) {
+            hb.push(i);
+        }
+
+        expect(hb.query(0, 32768, 64).length).toBeGreaterThan(511);
+        expect(hb.query(0, 32768, 64).length).toBeLessThan(1024);
+
+    });
 });

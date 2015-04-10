@@ -201,9 +201,18 @@ $(function (global) {
         return this.firstIndex() + this.buffer.size;
     };
 
+    HistoryBuffer.prototype.findMax = function (start, end) {
+        return start;
+    };
+
+    HistoryBuffer.prototype.findMin = function (start, end) {
+        return start;
+    };
+
+    // get a subsample of the series, starting at the start sample, ending at the end sample with a provided step
     HistoryBuffer.prototype.query = function (start, end, step) {
         var buffer = this.buffer;
-        var j;
+        var i, j;
 
         var data = [];
 
@@ -224,8 +233,25 @@ $(function (global) {
             end = lastIndex;
         }
 
-        for (var i = start - firstIndex; i < end - firstIndex; i++) {
-            data.push([i + firstIndex, buffer.get(i)]);
+        if (step < 4) {
+            for (i = start - firstIndex; i < end - firstIndex; i++) {
+                data.push([i + firstIndex, buffer.get(i)]);
+            }
+        } else {
+            var max, maxIndex, min, minIndex;
+            for (i = start - firstIndex; i < end - firstIndex; i += step) {
+                maxIndex = this.findMax(i, i + step);
+                minIndex = this.findMin(i, i + step);
+                if (minIndex === maxIndex) {
+                    data.push([minIndex, buffer.get(minIndex)]);
+                } else if (minIndex < maxIndex) {
+                    data.push([minIndex, buffer.get(minIndex)]);
+                    data.push([maxIndex, buffer.get(maxIndex)]);
+                } else {
+                    data.push([maxIndex, buffer.get(maxIndex)]);
+                    data.push([minIndex, buffer.get(minIndex)]);
+                }
+            }
         }
 
         return data;

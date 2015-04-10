@@ -1,6 +1,8 @@
 /* global $, describe, it, xit, after, beforeEach, afterEach, expect, jasmine, spyOn, HistoryBuffer */
 /* jshint browser: true*/
 
+/* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js* */
+
 describe('History Buffer', function () {
     'use strict';
 
