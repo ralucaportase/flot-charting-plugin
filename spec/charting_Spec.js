@@ -1,5 +1,6 @@
 /* global $, describe, it, xit, after, beforeEach, afterEach, expect, jasmine, spyOn, HistoryBuffer */
 /* jshint browser: true*/
+/* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js*,../jquery.flot.js,../jquery.flot.charting.js */
 
 describe('Flot charting: ', function () {
     'use strict';
@@ -8,6 +9,14 @@ describe('Flot charting: ', function () {
 
     beforeEach(function () {
         jasmine.clock().install();
+        /*
+        if (!$("link[href='../../charting.css']").length) {
+            $('<link href="../../charting.css" rel="stylesheet">').appendTo("head");
+        }
+        if (!$('.demo-container').length) {
+            $('<div class="demo-container"><div id="placeholder" class="demo-placeholder"></div></div>').appendTo("body");
+        }
+        */
     });
 
     afterEach(function () {

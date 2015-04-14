@@ -48,6 +48,21 @@ describe('History Buffer Query', function () {
 
         expect(hb.query(0, 32768, 64).length).toBeGreaterThan(511);
         expect(hb.query(0, 32768, 64).length).toBeLessThan(1024);
-
     });
+
+    it('should make sure that the acceleration structure is up to date', function () {
+        var size = 32768;
+        var hb = new HistoryBuffer(size);
+
+        for (var i = 0; i < size; i++) {
+            hb.push(i);
+        }
+
+        var res = hb.query(0, 32768, 64);
+        expect(hb.query(0, 32768, 64).length).toBeGreaterThan(511);
+
+        expect(hb.tree.levels[1].nodes[0].min).toBe(0);
+        expect(hb.tree.levels[1].nodes[0].max).toBe(1023);
+    });
+
 });

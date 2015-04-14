@@ -78,7 +78,7 @@ describe('History Buffer', function () {
                 expect(hb.tree.depth).toEqual(1);
                 expect(hb.tree.levels).toEqual(jasmine.any(Array));
                 expect(hb.tree.levels.length).toEqual(1);
-                expect(hb.tree.levels[0].nodes.length).toBe(1);
+                expect(hb.tree.levels[0].nodes.length).toBe(2);
                 expect(hb.tree.levels[0].nodes[0].min).toBe(1);
                 expect(hb.tree.levels[0].nodes[0].max).toBe(3);
             });
@@ -95,7 +95,7 @@ describe('History Buffer', function () {
                 expect(hb.tree.depth).toEqual(1);
                 expect(hb.tree.levels).toEqual(jasmine.any(Array));
                 expect(hb.tree.levels.length).toEqual(1);
-                expect(hb.tree.levels[0].nodes.length).toBe(2);
+                expect(hb.tree.levels[0].nodes.length).toBe(5);
                 expect(hb.tree.levels[0].nodes[0].min).toBe(0);
                 expect(hb.tree.levels[0].nodes[0].max).toBe(31);
                 expect(hb.tree.levels[0].nodes[1].min).toBe(32);
@@ -121,7 +121,7 @@ describe('History Buffer', function () {
 
                 expect(hb.tree.levels).toEqual(jasmine.any(Array));
                 expect(hb.tree.levels.length).toEqual(2);
-                expect(hb.tree.levels[1].nodes.length).toBe(2);
+                expect(hb.tree.levels[1].nodes.length).toBe(3);
                 expect(hb.tree.levels[1].nodes[0].min).toBe(0);
                 expect(hb.tree.levels[1].nodes[0].max).toBe(1023);
                 expect(hb.tree.levels[1].nodes[1].min).toBe(1024);
@@ -147,7 +147,7 @@ describe('History Buffer', function () {
 
                 expect(hb.tree.levels).toEqual(jasmine.any(Array));
                 expect(hb.tree.levels.length).toEqual(3);
-                expect(hb.tree.levels[2].nodes.length).toBe(2);
+                expect(hb.tree.levels[2].nodes.length).toBe(3);
                 expect(hb.tree.levels[2].nodes[0].min).toBe(0);
                 expect(hb.tree.levels[2].nodes[0].max).toBe(32767);
                 expect(hb.tree.levels[2].nodes[1].min).toBe(32768);

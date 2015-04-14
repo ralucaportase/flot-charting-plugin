@@ -30,6 +30,7 @@ $(function (global) {
         this.width = width || 1;
         this.buffer = new CBuffer(capacity); /* circular buffer */
         this.count = 0;
+        this.changed = false;
 
         this.buildEmptyAccelerationTree();
     };
@@ -45,7 +46,14 @@ $(function (global) {
 
         this.tree = tree;
         for (var i = 0; i < depth; i++) {
-            this.tree.levels.push(new TreeLevel(this, i + 1));
+            var tLevel = new TreeLevel(this, i + 1);
+            this.tree.levels.push(tLevel);
+            for (var j = 0; j < tLevel.capacity; j++) {
+                var node = new TreeNode();
+                node.max = Math.NaN;
+                node.min = Math.NaN;
+                tLevel.nodes.push(node);
+            }
         }
     };
 
@@ -76,20 +84,18 @@ $(function (global) {
 
             if (currentCount === branchFactor) {
                 currentCount = 0;
-                node = new TreeNode();
+                node = this.tree.levels[0].nodes[Math.floor(i / branchFactor)];
 
                 node.max = max;
                 node.min = min;
-                this.tree.levels[0].nodes.push(node);
             }
         }
 
         if (currentCount !== 0) {
-            node = new TreeNode();
+            node = this.tree.levels[0].nodes[Math.floor(i / branchFactor)];
 
             node.max = max;
             node.min = min;
-            this.tree.levels[0].nodes.push(node);
         }
 
         // populate higher levels
@@ -113,20 +119,18 @@ $(function (global) {
 
                 if (currentCount === branchFactor) {
                     currentCount = 0;
-                    node = new TreeNode();
+                    node = this.tree.levels[j].nodes[Math.floor(i / branchFactor)];
 
                     node.max = max;
                     node.min = min;
-                    this.tree.levels[j].nodes.push(node);
                 }
             }
 
             if (currentCount !== 0) {
-                node = new TreeNode();
+                node = this.tree.levels[j].nodes[Math.floor(i / branchFactor)];
 
                 node.max = max;
                 node.min = min;
-                this.tree.levels[j].nodes.push(node);
             }
         }
     };
@@ -145,6 +149,8 @@ $(function (global) {
     HistoryBuffer.prototype.push = function (item) {
         this.buffer.push(item);
         this.count++;
+
+        this.changed = true;
         if (this.callOnChange) {
             this.callOnChange();
         }
@@ -157,6 +163,7 @@ $(function (global) {
 
         this.count += arr.length;
 
+        this.changed = true;
         if (this.callOnChange) {
             this.callOnChange();
         }
@@ -215,6 +222,11 @@ $(function (global) {
         var i, j;
 
         var data = [];
+
+        if (this.changed) {
+            this.populateAccelerationTree();
+            this.changed = false;
+        }
 
         var firstIndex = this.firstIndex();
         var lastIndex = this.lastIndex();
