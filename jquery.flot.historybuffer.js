@@ -14,6 +14,8 @@ $(function (global) {
         this.start = 0;
         this.end = 0;
         this.parent = 0;
+        this.maxIndex = 0;
+        this.minIndex = 0;
         this.max = Math.Nan;
         this.min = Math.Nan;
     };
@@ -219,19 +221,26 @@ $(function (global) {
     HistoryBuffer.prototype.readMinMax = function (start, end) {
         var intervalSize = end - start;
         var minmax = {
-            min: start,
-            max: end
+            minIndex: start,
+            min: this.get(start),
+            maxIndex: end,
+            max: this.get(end)
         };
+
         var level = Math.ceil(Math.log(intervalSize) / Math.log(branchFactor)) - 1;
         var step = Math.pow(branchFactor, level);
         var truncatedStart = Math.ceil(start / step) * step;
         var truncatedEnd = Math.floor(end / step) * step;
 
         var updateMinMax = function (mm) {
-            if (mm.min < minmax.min)
+            if (mm.min < minmax.min) {
                 minmax.min = mm.min;
-            if (mm.max < minmax.max)
+                minmax.minIndex = mm.minIndex;
+            }
+            if (mm.max < minmax.max) {
                 minmax.max = mm.max;
+                minmax.maxIndex = mm.maxIndex;
+            }
         };
 
         if (start !== truncatedStart) {
@@ -242,10 +251,15 @@ $(function (global) {
             updateMinMax(this.readMinMax(truncatedEnd, end));
         }
 
-        var bufferStart = Math.max(0, this.count - this.capacity);
-        var levelStart = Math.floor(bufferStart / step);
+        var truncatedBufferStart = Math.floor(Math.max(0, this.count - this.capacity) / step) * step;
+        var begin = (truncatedStart - truncatedBufferStart) / step;
+        var finish = (truncatedEnd - truncatedBufferStart) / step;
 
-        for (var i = 0; i < 3; i++) {}
+        for (var i = begin; i < finish; i++) {
+            updateMinMax(this.tree.levels[level].nodes[i]);
+        }
+
+        return minmax;
     };
 
     // get a subsample of the series, starting at the start sample, ending at the end sample with a provided step
