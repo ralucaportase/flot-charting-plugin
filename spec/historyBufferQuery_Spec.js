@@ -65,4 +65,42 @@ describe('History Buffer Query', function () {
         expect(hb.tree.levels[1].nodes[0].max).toBe(1023);
     });
 
+    it('should make sure that the acceleration structure is up to date after slide', function () {
+        var size = 32768;
+        var hb = new HistoryBuffer(size);
+
+        for (var i = 0; i < size * 2; i++) {
+            hb.push(i);
+        }
+
+        var res = hb.query(0, 32768, 64);
+        expect(hb.query(32768, 65536, 64).length).toBeGreaterThan(511);
+
+        expect(hb.tree.levels[1].nodes[0].min).toBe(32768);
+        expect(hb.tree.levels[1].nodes[0].max).toBe(33791);
+    });
+
+    it('should use the acceleration structure to answer the queries', function () {
+        var size = 32768;
+        var hb = new HistoryBuffer(size);
+
+        for (var i = 0; i < size; i++) {
+            hb.push(i);
+        }
+
+        hb.populateAccelerationTree(); // make sure the acceleration tree is up to date
+        expect(hb.tree.levels[1].nodes[0].min).toBe(0);
+        expect(hb.tree.levels[1].nodes[0].max).toBe(1023);
+
+        // tamper with the acceleration tree
+        hb.tree.levels[1].nodes[0].min = 7;
+        hb.tree.levels[1].nodes[0].max = 9;
+
+        // make sure the rigged data is present in the query results
+        var res = hb.query(0, 32768, 32);
+
+        expect(res[0]).toEqual([7, 7]);
+        expect(res[1]).toEqual([9, 9]);
+    });
+
 });

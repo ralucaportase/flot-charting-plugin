@@ -216,6 +216,38 @@ $(function (global) {
         return start;
     };
 
+    HistoryBuffer.prototype.readMinMax = function (start, end) {
+        var intervalSize = end - start;
+        var minmax = {
+            min: start,
+            max: end
+        };
+        var level = Math.ceil(Math.log(intervalSize) / Math.log(branchFactor)) - 1;
+        var step = Math.pow(branchFactor, level);
+        var truncatedStart = Math.ceil(start / step) * step;
+        var truncatedEnd = Math.floor(end / step) * step;
+
+        var updateMinMax = function (mm) {
+            if (mm.min < minmax.min)
+                minmax.min = mm.min;
+            if (mm.max < minmax.max)
+                minmax.max = mm.max;
+        };
+
+        if (start !== truncatedStart) {
+            minmax = this.readMinMax(start, truncatedStart);
+        }
+
+        if (end !== truncatedEnd) {
+            updateMinMax(this.readMinMax(truncatedEnd, end));
+        }
+
+        var bufferStart = Math.max(0, this.count - this.capacity);
+        var levelStart = Math.floor(bufferStart / step);
+
+        for (var i = 0; i < 3; i++) {}
+    };
+
     // get a subsample of the series, starting at the start sample, ending at the end sample with a provided step
     HistoryBuffer.prototype.query = function (start, end, step) {
         var buffer = this.buffer;
