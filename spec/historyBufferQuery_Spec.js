@@ -47,7 +47,7 @@ describe('History Buffer Query', function () {
         }
 
         expect(hb.query(0, 32768, 64).length).toBeGreaterThan(511);
-        expect(hb.query(0, 32768, 64).length).toBeLessThan(1024);
+        expect(hb.query(0, 32768, 64).length).not.toBeGreaterThan(1024);
     });
 
     it('should make sure that the acceleration structure is up to date', function () {
@@ -88,19 +88,21 @@ describe('History Buffer Query', function () {
             hb.push(i);
         }
 
-        hb.populateAccelerationTree(); // make sure the acceleration tree is up to date
-        expect(hb.tree.levels[1].nodes[0].min).toBe(0);
-        expect(hb.tree.levels[1].nodes[0].max).toBe(1023);
+        hb.query(0, 1, 1); // make sure the acceleration tree is up to date
+        expect(hb.tree.levels[0].nodes[0].min).toBe(0);
+        expect(hb.tree.levels[0].nodes[0].max).toBe(31);
 
         // tamper with the acceleration tree
-        hb.tree.levels[1].nodes[0].min = 7;
-        hb.tree.levels[1].nodes[0].max = 9;
+        hb.tree.levels[0].nodes[0].min = -7;
+        hb.tree.levels[0].nodes[0].minIndex = 77;
+        hb.tree.levels[0].nodes[0].max = 99;
+        hb.tree.levels[0].nodes[0].maxIndex = 99;
 
         // make sure the rigged data is present in the query results
         var res = hb.query(0, 32768, 32);
 
-        expect(res[0]).toEqual([7, 7]);
-        expect(res[1]).toEqual([9, 9]);
+        expect(res[0]).toEqual([77, -7]);
+        expect(res[1]).toEqual([99, 99]);
     });
 
 });

@@ -37,6 +37,52 @@ $(function (global) {
         this.buildEmptyAccelerationTree();
     };
 
+    HistoryBuffer.prototype.setCapacity = function (newCapacity) {
+        if (newCapacity !== this.capacity) {
+            this.buffer = new CBuffer(newCapacity);
+            this.capacity = newCapacity;
+        }
+    };
+
+    HistoryBuffer.prototype.pop = function () {
+        return this.buffer.pop();
+    };
+
+    HistoryBuffer.prototype.push = function (item) {
+        this.buffer.push(item);
+        this.count++;
+
+        this.changed = true;
+        if (this.callOnChange) {
+            this.callOnChange();
+        }
+    };
+
+    HistoryBuffer.prototype.get = function (index) {
+        index -= Math.max(0, this.count - this.capacity);
+        return this.buffer.get(index);
+    };
+
+    HistoryBuffer.prototype.appendArray = function (arr) {
+        for (var i = 0; i < arr.length; i++) {
+            this.buffer.push(arr[i]);
+        }
+
+        this.count += arr.length;
+
+        this.changed = true;
+        if (this.callOnChange) {
+            this.callOnChange();
+        }
+    };
+
+    HistoryBuffer.prototype.toArray = function () {
+        // TO DO make the implementation fast
+        var buffer = this.buffer;
+
+        return buffer.toArray();
+    };
+
     HistoryBuffer.prototype.buildEmptyAccelerationTree = function () {
         var depth = Math.ceil(Math.log(this.capacity) / Math.log(branchFactor)) - 1;
         if (depth < 1)
@@ -61,25 +107,34 @@ $(function (global) {
 
     HistoryBuffer.prototype.populateAccelerationTree = function () {
         var buffer = this.buffer;
-        var node;
+        var node, i;
         var currentCount = 0;
+        var start = Math.max(0, this.count - this.capacity);
 
         if (buffer.size === 0) {
             return;
         }
 
-        var max, min;
+        var max, maxIndex, min, minIndex;
 
         // populate the first level
-        for (var i = 0; i < buffer.size; i++) {
+        for (i = 0; i < buffer.size; i++) {
             var val = buffer.get(i);
 
             if (currentCount === 0) {
                 max = val;
+                maxIndex = i + start;
                 min = val;
+                minIndex = i + start;
             } else {
-                if (val > max) max = val;
-                if (val < min) min = val;
+                if (val > max) {
+                    max = val;
+                    maxIndex = i + start;
+                }
+                if (val < min) {
+                    min = val;
+                    minIndex = i + start;
+                }
             }
 
             currentCount++;
@@ -89,7 +144,9 @@ $(function (global) {
                 node = this.tree.levels[0].nodes[Math.floor(i / branchFactor)];
 
                 node.max = max;
+                node.maxIndex = maxIndex;
                 node.min = min;
+                node.minIndex = minIndex;
             }
         }
 
@@ -97,7 +154,9 @@ $(function (global) {
             node = this.tree.levels[0].nodes[Math.floor(i / branchFactor)];
 
             node.max = max;
+            node.maxIndex = maxIndex;
             node.min = min;
+            node.minIndex = minIndex;
         }
 
         // populate higher levels
@@ -111,10 +170,18 @@ $(function (global) {
                 var cNode = baseLevel.nodes[i];
                 if (currentCount === 0) {
                     max = cNode.max;
+                    maxIndex = cNode.maxIndex;
                     min = cNode.min;
+                    minIndex = cNode.minIndex;
                 } else {
-                    if (cNode.max > max) max = cNode.max;
-                    if (cNode.min < min) min = cNode.min;
+                    if (cNode.max > max) {
+                        max = cNode.max;
+                        maxIndex = cNode.maxIndex;
+                    }
+                    if (cNode.min < min) {
+                        min = cNode.min;
+                        minIndex = cNode.minIndex;
+                    }
                 }
 
                 currentCount++;
@@ -124,7 +191,9 @@ $(function (global) {
                     node = this.tree.levels[j].nodes[Math.floor(i / branchFactor)];
 
                     node.max = max;
+                    node.maxIndex = maxIndex;
                     node.min = min;
+                    node.minIndex = minIndex;
                 }
             }
 
@@ -132,50 +201,11 @@ $(function (global) {
                 node = this.tree.levels[j].nodes[Math.floor(i / branchFactor)];
 
                 node.max = max;
+                node.maxIndex = maxIndex;
                 node.min = min;
+                node.minIndex = minIndex;
             }
         }
-    };
-
-    HistoryBuffer.prototype.setCapacity = function (newCapacity) {
-        if (newCapacity !== this.capacity) {
-            this.buffer = new CBuffer(newCapacity);
-            this.capacity = newCapacity;
-        }
-    };
-
-    HistoryBuffer.prototype.pop = function () {
-        return this.buffer.pop();
-    };
-
-    HistoryBuffer.prototype.push = function (item) {
-        this.buffer.push(item);
-        this.count++;
-
-        this.changed = true;
-        if (this.callOnChange) {
-            this.callOnChange();
-        }
-    };
-
-    HistoryBuffer.prototype.appendArray = function (arr) {
-        for (var i = 0; i < arr.length; i++) {
-            this.buffer.push(arr[i]);
-        }
-
-        this.count += arr.length;
-
-        this.changed = true;
-        if (this.callOnChange) {
-            this.callOnChange();
-        }
-    };
-
-    HistoryBuffer.prototype.toArray = function () {
-        // TO DO make the implementation fast
-        var buffer = this.buffer;
-
-        return buffer.toArray();
     };
 
     HistoryBuffer.prototype.toSeries = function (index) {
@@ -220,14 +250,15 @@ $(function (global) {
 
     HistoryBuffer.prototype.readMinMax = function (start, end) {
         var intervalSize = end - start;
+        //end = end - 1;
         var minmax = {
             minIndex: start,
             min: this.get(start),
-            maxIndex: end,
-            max: this.get(end)
+            maxIndex: start,
+            max: this.get(start)
         };
 
-        var level = Math.ceil(Math.log(intervalSize) / Math.log(branchFactor)) - 1;
+        var level = Math.floor(Math.log(intervalSize) / Math.log(branchFactor));
         var step = Math.pow(branchFactor, level);
         var truncatedStart = Math.ceil(start / step) * step;
         var truncatedEnd = Math.floor(end / step) * step;
@@ -237,7 +268,7 @@ $(function (global) {
                 minmax.min = mm.min;
                 minmax.minIndex = mm.minIndex;
             }
-            if (mm.max < minmax.max) {
+            if (mm.max > minmax.max) {
                 minmax.max = mm.max;
                 minmax.maxIndex = mm.maxIndex;
             }
@@ -256,7 +287,7 @@ $(function (global) {
         var finish = (truncatedEnd - truncatedBufferStart) / step;
 
         for (var i = begin; i < finish; i++) {
-            updateMinMax(this.tree.levels[level].nodes[i]);
+            updateMinMax(this.tree.levels[level - 1].nodes[i]);
         }
 
         return minmax;
@@ -292,22 +323,24 @@ $(function (global) {
         }
 
         if (step < 4) {
-            for (i = start - firstIndex; i < end - firstIndex; i++) {
-                data.push([i + firstIndex, buffer.get(i)]);
+            for (i = start; i < end; i++) {
+                data.push([i, this.get(i)]);
             }
         } else {
+            var minmax;
             var max, maxIndex, min, minIndex;
-            for (i = start - firstIndex; i < end - firstIndex; i += step) {
-                maxIndex = this.findMax(i, i + step);
-                minIndex = this.findMin(i, i + step);
+            for (i = start; i < end; i += step) {
+                minmax = this.readMinMax(i, i + step);
+                maxIndex = minmax.maxIndex;
+                minIndex = minmax.minIndex;
                 if (minIndex === maxIndex) {
-                    data.push([minIndex, buffer.get(minIndex)]);
+                    data.push([minIndex, minmax.min]);
                 } else if (minIndex < maxIndex) {
-                    data.push([minIndex, buffer.get(minIndex)]);
-                    data.push([maxIndex, buffer.get(maxIndex)]);
+                    data.push([minIndex, minmax.min]);
+                    data.push([maxIndex, minmax.max]);
                 } else {
-                    data.push([maxIndex, buffer.get(maxIndex)]);
-                    data.push([minIndex, buffer.get(minIndex)]);
+                    data.push([maxIndex, minmax.max]);
+                    data.push([minIndex, minmax.min]);
                 }
             }
         }
