@@ -46,9 +46,26 @@ describe('History Buffer Query', function () {
             hb.push(i);
         }
 
-        expect(hb.query(0, 32768, 64).length).toBeGreaterThan(511);
-        expect(hb.query(0, 32768, 64).length).not.toBeGreaterThan(1024);
+        var res = hb.query(0, 32768, 64);
+        expect(res.length).toBeGreaterThan(511);
+        expect(res.length).not.toBeGreaterThan(1024);
+        expect(res[0]).toEqual([0, 0]);
+        expect(res[1]).toEqual([63, 63]);
     });
+
+    it('should return a correctly decimated series for steps not multiple of 32', function () {
+        var size = 32768;
+        var hb = new HistoryBuffer(size);
+
+        for (var i = 0; i < size; i++) {
+            hb.push(i);
+        }
+
+        var res = hb.query(0, 32768, 99);
+        expect(res[0]).toEqual([0, 0]);
+        expect(res[1]).toEqual([98, 98]);
+    });
+
 
     it('should make sure that the acceleration structure is up to date', function () {
         var size = 32768;
