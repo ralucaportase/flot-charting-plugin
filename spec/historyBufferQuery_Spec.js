@@ -1,7 +1,7 @@
-/* global $, describe, it, xit, after, beforeEach, afterEach, expect, jasmine, spyOn, HistoryBuffer */
+/* global $, describe, it, xit, after, beforeEach, afterEach, expect, jasmine, spyOn, HistoryBuffer, jsc */
 /* jshint browser: true*/
 
-/* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js */
+/* brackets-xunit: includes=../lib/cbuffer.js,../lib/jsverify.standalone.js,../lib/jasmineHelpers2.js,../jquery.flot.historybuffer.js */
 
 describe('History Buffer Query', function () {
     'use strict';
@@ -122,4 +122,69 @@ describe('History Buffer Query', function () {
         expect(res[1]).toEqual([99, 99]);
     });
 
+    it('should give the same answer when using the queries vs toSeries with step 1', function () {
+        var size = 100;
+        var hb;
+
+        var property = jsc.forall(jsc.fatarray(jsc.number()), function (array) {
+            hb = new HistoryBuffer(size);
+
+            for (var i = 0; i < array.length; i++) {
+                hb.push(array[i]);
+            }
+
+            var toSeries = hb.toSeries();
+            var query = hb.query(0, hb.count, 1);
+
+            return JSON.stringify(toSeries) == JSON.stringify(query);
+        });
+
+        expect(property).toHold({
+            size: 2 * size
+        });
+    });
+
+    it('should give the same answer when using the queries vs toSeries with step 10', function () {
+        var size = 100;
+        var hb;
+
+        var property = jsc.forall(jsc.fatarray(jsc.number()), function (array) {
+            var i;
+            var step = 10;
+            hb = new HistoryBuffer(size);
+
+            for (i = 0; i < array.length; i++) {
+                hb.push(array[i]);
+            }
+
+            var toSeries = hb.toSeries();
+
+            var decimatedRes = [];
+            var splitSeries = [];
+            for (i = 0; i < toSeries.length; i += step) {
+                var section = toSeries.slice(i, i + step);
+
+                section.sort(function (a, b) {
+                    return a[1] > b[1];
+                }); // sort by data
+
+                section.splice(1, section.length - 2); // remove everything except min and max
+
+                section.sort(function (a, b) {
+                    return a[0] > b[0];
+                }); // sort by index
+
+                decimatedRes = decimatedRes.concat(section);
+            }
+
+            var query = hb.query(0, hb.count, step);
+
+            return JSON.stringify(decimatedRes) == JSON.stringify(query);
+        });
+
+        expect(property).toHold({
+            size: 2 * size,
+            tests: 200
+        });
+    });
 });

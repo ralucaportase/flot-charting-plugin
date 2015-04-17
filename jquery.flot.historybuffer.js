@@ -250,7 +250,7 @@ $(function (global) {
 
     HistoryBuffer.prototype.readMinMax = function (start, end) {
         var intervalSize = end - start;
-        //end = end - 1;
+        var i;
         var minmax = {
             minIndex: start,
             min: this.get(start),
@@ -258,12 +258,7 @@ $(function (global) {
             max: this.get(start)
         };
 
-        var level = Math.floor(Math.log(intervalSize) / Math.log(branchFactor));
-        var step = Math.pow(branchFactor, level);
-        var truncatedStart = Math.ceil(start / step) * step;
-        var truncatedEnd = Math.floor(end / step) * step;
-
-        var updateMinMax = function (mm) {
+        function updateMinMaxFromNode(mm) {
             if (mm.min < minmax.min) {
                 minmax.min = mm.min;
                 minmax.minIndex = mm.minIndex;
@@ -272,22 +267,47 @@ $(function (global) {
                 minmax.max = mm.max;
                 minmax.maxIndex = mm.maxIndex;
             }
-        };
+        }
+
+        function updateMinMaxFromIndexAndValue(index, value) {
+            if (value < minmax.min) {
+                minmax.min = value;
+                minmax.minIndex = index;
+            }
+            if (value > minmax.max) {
+                minmax.max = value;
+                minmax.maxIndex = index;
+            }
+        }
+
+        var level = Math.floor(Math.log(intervalSize) / Math.log(branchFactor));
+
+        if (level === 0) {
+            for (i = start; i < end; i++) {
+                updateMinMaxFromIndexAndValue(i, this.get(i));
+            }
+            return minmax;
+        }
+
+        var step = Math.pow(branchFactor, level);
+        var truncatedStart = Math.ceil(start / step) * step;
+        var truncatedEnd = Math.floor(end / step) * step;
+
 
         if (start !== truncatedStart) {
             minmax = this.readMinMax(start, truncatedStart);
         }
 
         if (end !== truncatedEnd) {
-            updateMinMax(this.readMinMax(truncatedEnd, end));
+            updateMinMaxFromNode(this.readMinMax(truncatedEnd, end));
         }
 
         var truncatedBufferStart = Math.floor(Math.max(0, this.count - this.capacity) / step) * step;
         var begin = (truncatedStart - truncatedBufferStart) / step;
         var finish = (truncatedEnd - truncatedBufferStart) / step;
 
-        for (var i = begin; i < finish; i++) {
-            updateMinMax(this.tree.levels[level - 1].nodes[i]);
+        for (i = begin; i < finish; i++) {
+            updateMinMaxFromNode(this.tree.levels[level - 1].nodes[i]);
         }
 
         return minmax;
