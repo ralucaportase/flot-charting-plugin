@@ -213,7 +213,6 @@ $(function (global) {
     };
 
     HistoryBuffer.prototype.toSeries = function (index) {
-        // TO DO make the implementation fast
         var buffer = this.buffer;
         var j;
 
@@ -240,14 +239,6 @@ $(function (global) {
         return this.startIndex() + this.buffer.size;
     };
 
-    HistoryBuffer.prototype.findMax = function (start, end) {
-        return start;
-    };
-
-    HistoryBuffer.prototype.findMin = function (start, end) {
-        return start;
-    };
-
     HistoryBuffer.prototype.readMinMax = function (start, end) {
         var intervalSize = end - start;
         var i;
@@ -269,7 +260,7 @@ $(function (global) {
             }
         }
 
-        function updateMinMaxFromIndexAndValue(index, value) {
+        function updateMinMaxFromBuffer(index, value) {
             if (value < minmax.min) {
                 minmax.min = value;
                 minmax.minIndex = index;
@@ -284,7 +275,7 @@ $(function (global) {
 
         if (level === 0) {
             for (i = start; i < end; i++) {
-                updateMinMaxFromIndexAndValue(i, this.get(i));
+                updateMinMaxFromBuffer(i, this.get(i));
             }
             return minmax;
         }
