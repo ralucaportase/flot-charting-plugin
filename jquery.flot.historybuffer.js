@@ -58,8 +58,12 @@ $(function (global) {
         }
     };
 
+    HistoryBuffer.prototype.startIndex = function () {
+        return Math.max(0, this.count - this.capacity);
+    };
+
     HistoryBuffer.prototype.get = function (index) {
-        index -= Math.max(0, this.count - this.capacity);
+        index -= this.startIndex();
         return this.buffer.get(index);
     };
 
@@ -109,7 +113,7 @@ $(function (global) {
         var buffer = this.buffer;
         var node, i;
         var currentCount = 0;
-        var start = Math.max(0, this.count - this.capacity);
+        var start = this.startIndex();
 
         if (buffer.size === 0) {
             return;
@@ -215,7 +219,7 @@ $(function (global) {
 
         var data = [];
 
-        var start = Math.max(0, this.count - this.capacity);
+        var start = this.startIndex();
 
         for (var i = 0; i < buffer.size; i++) {
             if (this.width > 1) {
@@ -232,12 +236,8 @@ $(function (global) {
         this.callOnChange = f;
     };
 
-    HistoryBuffer.prototype.firstIndex = function () {
-        return Math.max(0, this.count - this.capacity);
-    };
-
     HistoryBuffer.prototype.lastIndex = function () {
-        return this.firstIndex() + this.buffer.size;
+        return this.startIndex() + this.buffer.size;
     };
 
     HistoryBuffer.prototype.findMax = function (start, end) {
@@ -302,7 +302,7 @@ $(function (global) {
             updateMinMaxFromNode(this.readMinMax(truncatedEnd, end));
         }
 
-        var truncatedBufferStart = Math.floor(Math.max(0, this.count - this.capacity) / step) * step;
+        var truncatedBufferStart = Math.floor(this.startIndex() / step) * step;
         var begin = (truncatedStart - truncatedBufferStart) / step;
         var finish = (truncatedEnd - truncatedBufferStart) / step;
 
@@ -325,7 +325,7 @@ $(function (global) {
             this.changed = false;
         }
 
-        var firstIndex = this.firstIndex();
+        var firstIndex = this.startIndex();
         var lastIndex = this.lastIndex();
 
         if (start < firstIndex) {
