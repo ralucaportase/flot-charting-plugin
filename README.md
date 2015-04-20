@@ -21,4 +21,12 @@ Once included in the webpage the plugin is activated by specifing a history buff
             }
     };
 ```
-    
+
+Then you add data to the history buffer 
+
+```javascript
+    buffer.push(7); // append a number to the buffer
+    buffer.appendArray([1, 2, 3, 4]); // or append an array to the buffer
+```
+
+A chart redraw is automatically scheduled (requestAnimationFrame) on push or on appendArray so you don't have to.
