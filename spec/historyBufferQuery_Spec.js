@@ -78,8 +78,8 @@ describe('History Buffer Query', function () {
         var res = hb.query(0, 32768, 64);
         expect(hb.query(0, 32768, 64).length).toBeGreaterThan(511);
 
-        expect(hb.tree.levels[1].nodes[0].min).toBe(0);
-        expect(hb.tree.levels[1].nodes[0].max).toBe(1023);
+        expect(hb.tree.levels[1].nodes.get(0).min).toBe(0);
+        expect(hb.tree.levels[1].nodes.get(0).max).toBe(1023);
     });
 
     it('should make sure that the acceleration structure is up to date after slide', function () {
@@ -93,8 +93,8 @@ describe('History Buffer Query', function () {
         var res = hb.query(0, 32768, 64);
         expect(hb.query(32768, 65536, 64).length).toBeGreaterThan(511);
 
-        expect(hb.tree.levels[1].nodes[0].min).toBe(32768);
-        expect(hb.tree.levels[1].nodes[0].max).toBe(33791);
+        expect(hb.tree.levels[1].nodes.get(0).min).toBe(32768);
+        expect(hb.tree.levels[1].nodes.get(0).max).toBe(33791);
     });
 
     it('should use the acceleration structure to answer the queries', function () {
@@ -106,14 +106,14 @@ describe('History Buffer Query', function () {
         }
 
         hb.query(0, 1, 1); // make sure the acceleration tree is up to date
-        expect(hb.tree.levels[0].nodes[0].min).toBe(0);
-        expect(hb.tree.levels[0].nodes[0].max).toBe(31);
+        expect(hb.tree.levels[0].nodes.get(0).min).toBe(0);
+        expect(hb.tree.levels[0].nodes.get(0).max).toBe(31);
 
         // tamper with the acceleration tree
-        hb.tree.levels[0].nodes[0].min = -7;
-        hb.tree.levels[0].nodes[0].minIndex = 77;
-        hb.tree.levels[0].nodes[0].max = 99;
-        hb.tree.levels[0].nodes[0].maxIndex = 99;
+        hb.tree.levels[0].nodes.get(0).min = -7;
+        hb.tree.levels[0].nodes.get(0).minIndex = 77;
+        hb.tree.levels[0].nodes.get(0).max = 99;
+        hb.tree.levels[0].nodes.get(0).maxIndex = 99;
 
         // make sure the rigged data is present in the query results
         var res = hb.query(0, 32768, 32);
@@ -123,11 +123,11 @@ describe('History Buffer Query', function () {
     });
 
     it('should give the same answer when using the queries vs toSeries with step 1', function () {
-        var size = 100;
+        var hbSize = 100;
         var hb;
 
         var property = jsc.forall(jsc.fatarray(jsc.number()), function (array) {
-            hb = new HistoryBuffer(size);
+            hb = new HistoryBuffer(hbSize);
 
             for (var i = 0; i < array.length; i++) {
                 hb.push(array[i]);
@@ -140,18 +140,18 @@ describe('History Buffer Query', function () {
         });
 
         expect(property).toHold({
-            size: 2 * size
+            size: 2 * hbSize
         });
     });
 
     it('should give the same answer when using the queries vs toSeries with step 10', function () {
-        var size = 100;
+        var hbSize = 100;
         var hb;
 
         var property = jsc.forall(jsc.fatarray(jsc.number()), function (array) {
             var i;
             var step = 10;
-            hb = new HistoryBuffer(size);
+            hb = new HistoryBuffer(hbSize);
 
             for (i = 0; i < array.length; i++) {
                 hb.push(array[i]);
@@ -183,7 +183,7 @@ describe('History Buffer Query', function () {
         });
 
         expect(property).toHold({
-            size: 2 * size,
+            size: 2 * hbSize,
             tests: 200
         });
     });

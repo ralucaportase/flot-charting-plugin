@@ -23,7 +23,8 @@ $(function (global) {
     var TreeLevel = function (historyBuffer, level) {
         this.level = level;
         this.capacity = Math.ceil(historyBuffer.capacity / (Math.pow(branchFactor, level))) + 1;
-        this.nodes = [];
+        this.startIndex = 0;
+        this.nodes = new CBuffer(this.capacity);
     };
 
     /* Chart History buffer */
@@ -33,6 +34,7 @@ $(function (global) {
         this.buffer = new CBuffer(capacity); /* circular buffer */
         this.count = 0;
         this.changed = false;
+        this.accelerationTreeLastUpdated = 0;
 
         this.buildEmptyAccelerationTree();
     };
@@ -81,10 +83,7 @@ $(function (global) {
     };
 
     HistoryBuffer.prototype.toArray = function () {
-        // TO DO make the implementation fast
-        var buffer = this.buffer;
-
-        return buffer.toArray();
+        return this.buffer.toArray();
     };
 
     HistoryBuffer.prototype.buildEmptyAccelerationTree = function () {
@@ -102,8 +101,6 @@ $(function (global) {
             this.tree.levels.push(tLevel);
             for (var j = 0; j < tLevel.capacity; j++) {
                 var node = new TreeNode();
-                node.max = Math.NaN;
-                node.min = Math.NaN;
                 tLevel.nodes.push(node);
             }
         }
@@ -145,7 +142,7 @@ $(function (global) {
 
             if (currentCount === branchFactor) {
                 currentCount = 0;
-                node = this.tree.levels[0].nodes[Math.floor(i / branchFactor)];
+                node = this.tree.levels[0].nodes.get(Math.floor(i / branchFactor));
 
                 node.max = max;
                 node.maxIndex = maxIndex;
@@ -155,7 +152,7 @@ $(function (global) {
         }
 
         if (currentCount !== 0) {
-            node = this.tree.levels[0].nodes[Math.floor(i / branchFactor)];
+            node = this.tree.levels[0].nodes.get(Math.floor(i / branchFactor));
 
             node.max = max;
             node.maxIndex = maxIndex;
@@ -170,8 +167,8 @@ $(function (global) {
 
             currentCount = 0;
 
-            for (i = 0; i < baseLevel.nodes.length; i++) {
-                var cNode = baseLevel.nodes[i];
+            for (i = 0; i < baseLevel.nodes.size; i++) {
+                var cNode = baseLevel.nodes.get(i);
                 if (currentCount === 0) {
                     max = cNode.max;
                     maxIndex = cNode.maxIndex;
@@ -192,7 +189,7 @@ $(function (global) {
 
                 if (currentCount === branchFactor) {
                     currentCount = 0;
-                    node = this.tree.levels[j].nodes[Math.floor(i / branchFactor)];
+                    node = this.tree.levels[j].nodes.get(Math.floor(i / branchFactor));
 
                     node.max = max;
                     node.maxIndex = maxIndex;
@@ -202,7 +199,7 @@ $(function (global) {
             }
 
             if (currentCount !== 0) {
-                node = this.tree.levels[j].nodes[Math.floor(i / branchFactor)];
+                node = this.tree.levels[j].nodes.get(Math.floor(i / branchFactor));
 
                 node.max = max;
                 node.maxIndex = maxIndex;
@@ -298,7 +295,7 @@ $(function (global) {
         var finish = (truncatedEnd - truncatedBufferStart) / step;
 
         for (i = begin; i < finish; i++) {
-            updateMinMaxFromNode(this.tree.levels[level - 1].nodes[i]);
+            updateMinMaxFromNode(this.tree.levels[level - 1].nodes.get(i));
         }
 
         return minmax;
