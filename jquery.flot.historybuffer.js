@@ -22,9 +22,15 @@ $(function (global) {
 
     var TreeLevel = function (historyBuffer, level) {
         this.level = level;
+        this.step = Math.pow(branchFactor, level);
         this.capacity = Math.ceil(historyBuffer.capacity / (Math.pow(branchFactor, level))) + 1;
         this.startIndex = 0;
         this.nodes = new CBuffer(this.capacity);
+    };
+
+    TreeLevel.prototype.shift = function () {
+        this.startIndex += this.step;
+        this.nodes.push(new TreeNode());
     };
 
     /* Chart History buffer */
@@ -82,6 +88,20 @@ $(function (global) {
         }
     };
 
+    HistoryBuffer.prototype.getTreeNode = function (level, index) {
+        var treeLevel = this.tree.levels[level];
+        var levelStep = treeLevel.step;
+        var levelIndex = Math.floor((index - treeLevel.startIndex) / levelStep);
+
+        if ((levelIndex < 0) || (levelIndex >= treeLevel.capacity)) {
+            return null;
+        }
+
+        var node = treeLevel.nodes.get(levelIndex);
+
+        return node;
+    };
+
     HistoryBuffer.prototype.toArray = function () {
         return this.buffer.toArray();
     };
@@ -106,35 +126,42 @@ $(function (global) {
         }
     };
 
-    HistoryBuffer.prototype.populateAccelerationTree = function () {
-        var buffer = this.buffer;
-        var node, i;
+    /*
+     * Partially populate first level of the tree. Only take into consideration values starting at the startingFromIndex.
+     * All the tree levels should be shifted as necessary (consistent)
+     */
+    HistoryBuffer.prototype.populateFirstTreeLevel = function (startingFrom) {
         var currentCount = 0;
-        var start = this.startIndex();
+        var i = 0;
+        var firstSample = true;
+        var node, max, maxIndex, min, minIndex;
 
-        if (buffer.size === 0) {
-            return;
+        /* align starting from to a branchFactor boundary*/
+        startingFrom = Math.floor(startingFrom / branchFactor) * branchFactor;
+
+        if (this.startIndex() > startingFrom) {
+            startingFrom = this.startIndex();
+            currentCount = startingFrom % branchFactor;
         }
 
-        var max, maxIndex, min, minIndex;
+        for (i = startingFrom; i < this.lastIndex(); i++) {
+            var val = this.get(i);
 
-        // populate the first level
-        for (i = 0; i < buffer.size; i++) {
-            var val = buffer.get(i);
-
-            if (currentCount === 0) {
+            if (firstSample) {
                 max = val;
-                maxIndex = i + start;
+                maxIndex = i;
                 min = val;
-                minIndex = i + start;
+                minIndex = i;
+
+                firstSample = false;
             } else {
                 if (val > max) {
                     max = val;
-                    maxIndex = i + start;
+                    maxIndex = i;
                 }
                 if (val < min) {
                     min = val;
-                    minIndex = i + start;
+                    minIndex = i;
                 }
             }
 
@@ -142,7 +169,8 @@ $(function (global) {
 
             if (currentCount === branchFactor) {
                 currentCount = 0;
-                node = this.tree.levels[0].nodes.get(Math.floor(i / branchFactor));
+                firstSample = true;
+                node = this.getTreeNode(0, i);
 
                 node.max = max;
                 node.maxIndex = maxIndex;
@@ -152,54 +180,61 @@ $(function (global) {
         }
 
         if (currentCount !== 0) {
-            node = this.tree.levels[0].nodes.get(Math.floor(i / branchFactor));
+            node = this.getTreeNode(0, i);
 
             node.max = max;
             node.maxIndex = maxIndex;
             node.min = min;
             node.minIndex = minIndex;
         }
+    };
 
-        // populate higher levels
-        for (var j = 1; j < this.tree.depth; j++) {
-            var baseLevel = this.tree.levels[j - 1];
-            var currentLevel = this.tree.levels[j];
+    /*
+     * Partially populate the rest of the levels of the tree. Only take into consideration values starting at the startingFromIndex.
+     * All the tree levels should be shifted as necessary (consistent)
+     */
+    HistoryBuffer.prototype.populateTreeLevel = function (startingFrom, level) {
+        var currentCount = 0;
+        var i = 0;
+        var firstSample = true;
+        var node, max, maxIndex, min, minIndex;
 
-            currentCount = 0;
+        var baseLevel = this.tree.levels[level - 1];
+        var currentLevel = this.tree.levels[level];
 
-            for (i = 0; i < baseLevel.nodes.size; i++) {
-                var cNode = baseLevel.nodes.get(i);
-                if (currentCount === 0) {
+        /* align starting from to a node in the base level boundary*/
+        startingFrom = Math.floor(0 / currentLevel.step) * currentLevel.step;
+
+        if (baseLevel.startIndex > startingFrom) {
+            startingFrom = baseLevel.startIndex;
+            currentCount = (startingFrom / baseLevel.step) % branchFactor;
+        }
+
+        for (i = startingFrom; i < this.lastIndex(); i += baseLevel.step) {
+            var cNode = this.getTreeNode(level - 1, i);
+            if (firstSample) {
+                max = cNode.max;
+                maxIndex = cNode.maxIndex;
+                min = cNode.min;
+                minIndex = cNode.minIndex;
+                firstSample = false;
+            } else {
+                if (cNode.max > max) {
                     max = cNode.max;
                     maxIndex = cNode.maxIndex;
+                }
+                if (cNode.min < min) {
                     min = cNode.min;
                     minIndex = cNode.minIndex;
-                } else {
-                    if (cNode.max > max) {
-                        max = cNode.max;
-                        maxIndex = cNode.maxIndex;
-                    }
-                    if (cNode.min < min) {
-                        min = cNode.min;
-                        minIndex = cNode.minIndex;
-                    }
-                }
-
-                currentCount++;
-
-                if (currentCount === branchFactor) {
-                    currentCount = 0;
-                    node = this.tree.levels[j].nodes.get(Math.floor(i / branchFactor));
-
-                    node.max = max;
-                    node.maxIndex = maxIndex;
-                    node.min = min;
-                    node.minIndex = minIndex;
                 }
             }
 
-            if (currentCount !== 0) {
-                node = this.tree.levels[j].nodes.get(Math.floor(i / branchFactor));
+            currentCount++;
+
+            if (currentCount === branchFactor) {
+                currentCount = 0;
+                firstSample = true;
+                node = this.getTreeNode(level, i);
 
                 node.max = max;
                 node.maxIndex = maxIndex;
@@ -207,6 +242,42 @@ $(function (global) {
                 node.minIndex = minIndex;
             }
         }
+
+        if (currentCount !== 0) {
+            node = this.getTreeNode(level, i);
+
+            node.max = max;
+            node.maxIndex = maxIndex;
+            node.min = min;
+            node.minIndex = minIndex;
+        }
+    };
+
+    HistoryBuffer.prototype.shiftTreeLevel = function (level) {
+        var startingIndex = this.startIndex();
+        var treeLevel = this.tree.levels[level];
+
+        var correctStartIndex = Math.floor(startingIndex / treeLevel.step) * treeLevel.step;
+
+        while (treeLevel.startIndex < correctStartIndex) {
+            treeLevel.shift();
+        }
+    };
+
+    HistoryBuffer.prototype.updateAccelerationTree = function () {
+        var buffer = this.buffer;
+        var level;
+
+        for (level = 0; level < this.tree.depth; level++) {
+            this.shiftTreeLevel(level);
+        }
+
+        this.populateFirstTreeLevel(this.accelerationTreeLastUpdated);
+        for (level = 1; level < this.tree.depth; level++) {
+            this.populateTreeLevel(this.accelerationTreeLastUpdated, level);
+        }
+
+        this.accelerationTreeLastUpdated = this.startIndex() + buffer.size;
     };
 
     HistoryBuffer.prototype.toSeries = function (index) {
@@ -281,7 +352,6 @@ $(function (global) {
         var truncatedStart = Math.ceil(start / step) * step;
         var truncatedEnd = Math.floor(end / step) * step;
 
-
         if (start !== truncatedStart) {
             minmax = this.readMinMax(start, truncatedStart);
         }
@@ -309,7 +379,7 @@ $(function (global) {
         var data = [];
 
         if (this.changed) {
-            this.populateAccelerationTree();
+            this.updateAccelerationTree();
             this.changed = false;
         }
 

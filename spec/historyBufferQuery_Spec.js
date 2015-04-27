@@ -147,36 +147,16 @@ describe('History Buffer Query', function () {
     it('should give the same answer when using the queries vs toSeries with step 10', function () {
         var hbSize = 100;
         var hb;
+        var step = 10;
 
         var property = jsc.forall(jsc.fatarray(jsc.number()), function (array) {
-            var i;
-            var step = 10;
             hb = new HistoryBuffer(hbSize);
 
-            for (i = 0; i < array.length; i++) {
+            for (var i = 0; i < array.length; i++) {
                 hb.push(array[i]);
             }
 
-            var toSeries = hb.toSeries();
-
-            var decimatedRes = [];
-            var splitSeries = [];
-            for (i = 0; i < toSeries.length; i += step) {
-                var section = toSeries.slice(i, i + step);
-
-                section.sort(function (a, b) {
-                    return a[1] > b[1];
-                }); // sort by data
-
-                section.splice(1, section.length - 2); // remove everything except min and max
-
-                section.sort(function (a, b) {
-                    return a[0] > b[0];
-                }); // sort by index
-
-                decimatedRes = decimatedRes.concat(section);
-            }
-
+            var decimatedRes = decimateRawData(hb, step);
             var query = hb.query(0, hb.count, step);
 
             return JSON.stringify(decimatedRes) == JSON.stringify(query);
@@ -187,4 +167,116 @@ describe('History Buffer Query', function () {
             tests: 200
         });
     });
+
+    describe('Acceleration tree update', function () {
+        it('should recompute the minmax for a one level tree on push', function () {
+            var hb = new HistoryBuffer(128);
+            hb.push(1);
+
+            hb.updateAccelerationTree();
+
+            expect(hb.tree.levels[0].nodes.get(0).min).toBe(1);
+            expect(hb.tree.levels[0].nodes.get(0).minIndex).toBe(0);
+            expect(hb.tree.levels[0].nodes.get(0).max).toBe(1);
+            expect(hb.tree.levels[0].nodes.get(0).maxIndex).toBe(0);
+        });
+
+        it('should recompute the minmax for a one level tree on fill', function () {
+            var hb = new HistoryBuffer(64);
+            for (var i = 0; i < 64; i++) {
+                hb.push(i);
+            }
+
+            hb.updateAccelerationTree();
+
+            expect(hb.tree.levels[0].nodes.get(0).min).toBe(0);
+            expect(hb.tree.levels[0].nodes.get(0).minIndex).toBe(0);
+            expect(hb.tree.levels[0].nodes.get(0).max).toBe(31);
+            expect(hb.tree.levels[0].nodes.get(0).maxIndex).toBe(31);
+            expect(hb.tree.levels[0].nodes.get(1).min).toBe(32);
+            expect(hb.tree.levels[0].nodes.get(1).minIndex).toBe(32);
+            expect(hb.tree.levels[0].nodes.get(1).max).toBe(63);
+            expect(hb.tree.levels[0].nodes.get(1).maxIndex).toBe(63);
+        });
+
+        it('should compute the minmax for a one level tree on one element overwrite', function () {
+            var hb = new HistoryBuffer(64);
+            for (var i = 0; i < 65; i++) {
+                hb.push(i);
+            }
+
+            hb.updateAccelerationTree();
+
+            expect(hb.tree.levels[0].nodes.get(0).min).toBe(1);
+            expect(hb.tree.levels[0].nodes.get(0).minIndex).toBe(1);
+            expect(hb.tree.levels[0].nodes.get(0).max).toBe(31);
+            expect(hb.tree.levels[0].nodes.get(0).maxIndex).toBe(31);
+            expect(hb.tree.levels[0].nodes.get(1).min).toBe(32);
+            expect(hb.tree.levels[0].nodes.get(1).minIndex).toBe(32);
+            expect(hb.tree.levels[0].nodes.get(1).max).toBe(63);
+            expect(hb.tree.levels[0].nodes.get(1).maxIndex).toBe(63);
+            expect(hb.tree.levels[0].nodes.get(2).min).toBe(64);
+            expect(hb.tree.levels[0].nodes.get(2).minIndex).toBe(64);
+            expect(hb.tree.levels[0].nodes.get(2).max).toBe(64);
+            expect(hb.tree.levels[0].nodes.get(2).maxIndex).toBe(64);
+        });
+
+        it('should compute the minmax for a one level tree on multiple elements overwrite', function () {
+            var hb = new HistoryBuffer(64);
+            for (var i = 0; i < 64 + 32; i++) {
+                hb.push(i);
+            }
+
+            hb.updateAccelerationTree();
+
+            expect(hb.tree.levels[0].nodes.get(0).min).toBe(32);
+            expect(hb.tree.levels[0].nodes.get(0).minIndex).toBe(32);
+            expect(hb.tree.levels[0].nodes.get(0).max).toBe(63);
+            expect(hb.tree.levels[0].nodes.get(0).maxIndex).toBe(63);
+            expect(hb.tree.levels[0].nodes.get(1).min).toBe(64);
+            expect(hb.tree.levels[0].nodes.get(1).minIndex).toBe(64);
+            expect(hb.tree.levels[0].nodes.get(1).max).toBe(95);
+            expect(hb.tree.levels[0].nodes.get(1).maxIndex).toBe(95);
+        });
+
+        it('should recompute the minmax for a two level tree', function () {
+            var hb = new HistoryBuffer(32 * 32 * 2);
+
+            for (var i = 0; i < 2 * 32 * 32; i++) {
+                hb.push(i);
+            }
+
+            hb.updateAccelerationTree();
+
+            expect(hb.tree.levels.length).toEqual(2);
+            expect(hb.tree.levels[1].nodes.size).toBe(3);
+            expect(hb.tree.levels[1].nodes.get(0).min).toBe(0);
+            expect(hb.tree.levels[1].nodes.get(0).max).toBe(1023);
+            expect(hb.tree.levels[1].nodes.get(1).min).toBe(1024);
+            expect(hb.tree.levels[1].nodes.get(1).max).toBe(2047);
+        });
+    });
+
+    function decimateRawData(hb, step) {
+        var toSeries = hb.toSeries();
+        var decimatedRes = [];
+
+        for (var i = 0; i < toSeries.length; i += step) {
+            var section = toSeries.slice(i, i + step);
+
+            section.sort(function (a, b) {
+                return a[1] > b[1];
+            }); // sort by data
+
+            section.splice(1, section.length - 2); // remove everything except min and max
+
+            section.sort(function (a, b) {
+                return a[0] > b[0];
+            }); // sort by index
+
+            decimatedRes = decimatedRes.concat(section);
+        }
+
+        return decimatedRes;
+    }
 });

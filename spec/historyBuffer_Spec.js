@@ -73,7 +73,7 @@ describe('History Buffer', function () {
 
                 hb.appendArray([1, 2, 3]);
 
-                hb.populateAccelerationTree();
+                hb.updateAccelerationTree();
 
                 expect(hb.tree.depth).toEqual(1);
                 expect(hb.tree.levels).toEqual(jasmine.any(Array));
@@ -90,7 +90,7 @@ describe('History Buffer', function () {
                     hb.push(i);
                 }
 
-                hb.populateAccelerationTree();
+                hb.updateAccelerationTree();
 
                 expect(hb.tree.depth).toEqual(1);
                 expect(hb.tree.levels).toEqual(jasmine.any(Array));
@@ -117,7 +117,7 @@ describe('History Buffer', function () {
                     hb.push(i);
                 }
 
-                hb.populateAccelerationTree();
+                hb.updateAccelerationTree();
 
                 expect(hb.tree.levels).toEqual(jasmine.any(Array));
                 expect(hb.tree.levels.length).toEqual(2);
@@ -143,7 +143,7 @@ describe('History Buffer', function () {
                     hb.push(i);
                 }
 
-                hb.populateAccelerationTree();
+                hb.updateAccelerationTree();
 
                 expect(hb.tree.levels).toEqual(jasmine.any(Array));
                 expect(hb.tree.levels.length).toEqual(3);
