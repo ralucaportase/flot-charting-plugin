@@ -168,6 +168,31 @@ describe('History Buffer Query', function () {
         });
     });
 
+    xit('should give the same answer when using the queries vs toSeries with step 55', function () {
+        var hbSize = 2 * 1024;
+        var hb;
+        var step = 55;
+
+        var property = jsc.forall(jsc.fatarray(jsc.number()), function (array) {
+            hb = new HistoryBuffer(hbSize);
+
+            for (var i = 0; i < array.length; i++) {
+                hb.push(array[i]);
+            }
+
+            var decimatedRes = decimateRawData(hb, step);
+            var query = hb.query(0, hb.count, step);
+
+            return JSON.stringify(decimatedRes) == JSON.stringify(query);
+        });
+
+        expect(property).toHold({
+            size: 2 * hbSize,
+            tests: 10
+        });
+    });
+
+
     describe('Acceleration tree update', function () {
         it('should recompute the minmax for a one level tree on push', function () {
             var hb = new HistoryBuffer(128);
@@ -255,6 +280,51 @@ describe('History Buffer Query', function () {
             expect(hb.tree.levels[1].nodes.get(1).min).toBe(1024);
             expect(hb.tree.levels[1].nodes.get(1).max).toBe(2047);
         });
+
+        it('should recompute the minmax for a one level tree on the left side of the tree on slide', function () {
+            var hb = new HistoryBuffer(64);
+
+            for (var i = 0; i < 64; i++) {
+                hb.push(i);
+            }
+            hb.updateAccelerationTree();
+
+            for (var j = 0; j < 2; j++) {
+                hb.push(64 + j);
+            }
+
+            hb.updateAccelerationTree();
+
+            expect(hb.tree.levels[0].nodes.get(0).min).toBe(2);
+            expect(hb.tree.levels[0].nodes.get(0).max).toBe(31);
+            expect(hb.tree.levels[0].nodes.get(1).min).toBe(32);
+            expect(hb.tree.levels[0].nodes.get(1).max).toBe(63);
+            expect(hb.tree.levels[0].nodes.get(2).min).toBe(64);
+            expect(hb.tree.levels[0].nodes.get(2).max).toBe(65);
+        });
+
+        it('should recompute the minmax for a two level tree on the left side of the tree on slide', function () {
+            var hb = new HistoryBuffer(32 * 32 * 2);
+
+            for (var i = 0; i < 2 * 32 * 32; i++) {
+                hb.push(i);
+            }
+
+            hb.updateAccelerationTree();
+
+            for (var j = 0; j < 2; j++) {
+                hb.push(2 * 32 * 32 + j);
+            }
+
+            hb.updateAccelerationTree();
+
+            expect(hb.tree.levels[1].nodes.get(0).min).toBe(2);
+            expect(hb.tree.levels[1].nodes.get(0).max).toBe(1023);
+            expect(hb.tree.levels[1].nodes.get(1).min).toBe(1024);
+            expect(hb.tree.levels[1].nodes.get(1).max).toBe(2047);
+            expect(hb.tree.levels[1].nodes.get(2).min).toBe(2048);
+            expect(hb.tree.levels[1].nodes.get(2).max).toBe(2049);
+        });
     });
 
     function decimateRawData(hb, step) {
@@ -265,13 +335,13 @@ describe('History Buffer Query', function () {
             var section = toSeries.slice(i, i + step);
 
             section.sort(function (a, b) {
-                return a[1] > b[1];
+                return a[1] - b[1];
             }); // sort by data
 
             section.splice(1, section.length - 2); // remove everything except min and max
 
             section.sort(function (a, b) {
-                return a[0] > b[0];
+                return a[0] - b[0];
             }); // sort by index
 
             decimatedRes = decimatedRes.concat(section);

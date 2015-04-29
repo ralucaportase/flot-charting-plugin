@@ -40,7 +40,8 @@ $(function (global) {
         this.buffer = new CBuffer(capacity); /* circular buffer */
         this.count = 0;
         this.changed = false;
-        this.accelerationTreeLastUpdated = 0;
+        this.lastUpdatedIndex = 0;
+        this.firstUpdatedIndex = 0;
 
         this.buildEmptyAccelerationTree();
     };
@@ -253,14 +254,45 @@ $(function (global) {
         }
     };
 
+
+    // when shifting the history buffer to the left, update the leftmost nodes in the tree
     HistoryBuffer.prototype.shiftTreeLevel = function (level) {
         var startingIndex = this.startIndex();
         var treeLevel = this.tree.levels[level];
 
-        var correctStartIndex = Math.floor(startingIndex / treeLevel.step) * treeLevel.step;
+        var alignedStartIndex = Math.floor(startingIndex / treeLevel.step) * treeLevel.step;
 
-        while (treeLevel.startIndex < correctStartIndex) {
+        while (treeLevel.startIndex < alignedStartIndex) {
             treeLevel.shift();
+        }
+
+        /* update the first node in level */
+        if (startingIndex !== alignedStartIndex) {
+            var minmax = {
+                minIndex: startingIndex,
+                min: this.get(startingIndex),
+                maxIndex: startingIndex,
+                max: this.get(startingIndex)
+            };
+            var i;
+            var firstNode = treeLevel.nodes.get(0);
+
+            if (level === 0) {
+                for (i = startingIndex; i < (alignedStartIndex + branchFactor); i++) {
+                    updateMinMaxFromValue(i, this.get(i), minmax);
+                }
+
+            } else {
+                for (i = startingIndex; i < (alignedStartIndex + treeLevel.step); i += treeLevel.step / branchFactor) {
+                    updateMinMaxFromNode(this.getTreeNode(level - 1, i), minmax);
+                }
+            }
+
+            firstNode.minIndex = minmax.minIndex;
+            firstNode.min = minmax.min;
+            firstNode.maxIndex = minmax.maxIndex;
+            firstNode.max = minmax.max;
+
         }
     };
 
@@ -272,12 +304,16 @@ $(function (global) {
             this.shiftTreeLevel(level);
         }
 
-        this.populateFirstTreeLevel(this.accelerationTreeLastUpdated);
-        for (level = 1; level < this.tree.depth; level++) {
-            this.populateTreeLevel(this.accelerationTreeLastUpdated, level);
+        for (level = 0; level < this.tree.depth; level++) {
+            if (level === 0) {
+                this.populateFirstTreeLevel(this.lastUpdatedIndex);
+            } else {
+                this.populateTreeLevel(this.lastUpdatedIndex, level);
+            }
         }
 
-        this.accelerationTreeLastUpdated = this.startIndex() + buffer.size;
+        this.lastUpdatedIndex = this.startIndex() + buffer.size;
+        this.firstUpdatedIndex = this.startIndex();
     };
 
     HistoryBuffer.prototype.toSeries = function (index) {
@@ -307,6 +343,28 @@ $(function (global) {
         return this.startIndex() + this.buffer.size;
     };
 
+    function updateMinMaxFromValue(index, value, minmax) {
+        if (value < minmax.min) {
+            minmax.min = value;
+            minmax.minIndex = index;
+        }
+        if (value > minmax.max) {
+            minmax.max = value;
+            minmax.maxIndex = index;
+        }
+    }
+
+    function updateMinMaxFromNode(node, minmax) {
+        if (node.min < minmax.min) {
+            minmax.min = node.min;
+            minmax.minIndex = node.minIndex;
+        }
+        if (node.max > minmax.max) {
+            minmax.max = node.max;
+            minmax.maxIndex = node.maxIndex;
+        }
+    }
+
     HistoryBuffer.prototype.readMinMax = function (start, end) {
         var intervalSize = end - start;
         var i;
@@ -317,33 +375,11 @@ $(function (global) {
             max: this.get(start)
         };
 
-        function updateMinMaxFromNode(mm) {
-            if (mm.min < minmax.min) {
-                minmax.min = mm.min;
-                minmax.minIndex = mm.minIndex;
-            }
-            if (mm.max > minmax.max) {
-                minmax.max = mm.max;
-                minmax.maxIndex = mm.maxIndex;
-            }
-        }
-
-        function updateMinMaxFromBuffer(index, value) {
-            if (value < minmax.min) {
-                minmax.min = value;
-                minmax.minIndex = index;
-            }
-            if (value > minmax.max) {
-                minmax.max = value;
-                minmax.maxIndex = index;
-            }
-        }
-
         var level = Math.floor(Math.log(intervalSize) / Math.log(branchFactor));
 
         if (level === 0) {
             for (i = start; i < end; i++) {
-                updateMinMaxFromBuffer(i, this.get(i));
+                updateMinMaxFromValue(i, this.get(i), minmax);
             }
             return minmax;
         }
@@ -357,7 +393,7 @@ $(function (global) {
         }
 
         if (end !== truncatedEnd) {
-            updateMinMaxFromNode(this.readMinMax(truncatedEnd, end));
+            updateMinMaxFromNode(this.readMinMax(truncatedEnd, end), minmax);
         }
 
         var truncatedBufferStart = Math.floor(this.startIndex() / step) * step;
@@ -365,7 +401,7 @@ $(function (global) {
         var finish = (truncatedEnd - truncatedBufferStart) / step;
 
         for (i = begin; i < finish; i++) {
-            updateMinMaxFromNode(this.tree.levels[level - 1].nodes.get(i));
+            updateMinMaxFromNode(this.tree.levels[level - 1].nodes.get(i), minmax);
         }
 
         return minmax;

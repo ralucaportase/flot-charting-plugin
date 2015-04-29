@@ -4,22 +4,24 @@
 $(function () {
     'use strict';
     var plot;
-    var buffer = new HistoryBuffer(256, 2);
+    var buffer = new HistoryBuffer(1024 * 1024, 1);
     var globalIndex = 0;
-    var chartStep = 0.1;
+    var chartStep = 0.00001;
 
     function updateData() {
         var sin, cos;
 
-        sin = Math.sin(globalIndex * chartStep);
-        cos = Math.cos(globalIndex * chartStep);
-        globalIndex++;
+        for (var i = 0; i < 1024; i++) {
+            sin = Math.sin(globalIndex * chartStep);
+            //cos = Math.cos(globalIndex * chartStep);
+            globalIndex++;
 
-        buffer.push([sin, cos]);
+            buffer.push(sin);
+        }
     }
 
     function updateChart() {
-        setTimeout(updateChart, 32);
+        setTimeout(updateChart, 4);
         updateData();
     }
 
@@ -32,7 +34,8 @@ $(function () {
         },
         legend: {
             show: false
-        },
+        }
+        /*,
         cursors: [
             {
                 name: 'Orange',
@@ -45,20 +48,8 @@ $(function () {
                 showLabel: true,
                 snapToPlot: 0,
                 symbol: 'cross'
-            },
-            {
-                name: 'Blue',
-                mode: 'xy',
-                color: '#5593c1',
-                position: {
-                    relativeX: 300,
-                    relativeY: 200,
-                },
-                showLabel: true,
-                snapToPlot: 1,
-                symbol: 'triangle'
             }
-        ]
+        ]*/
     });
 
     updateChart();

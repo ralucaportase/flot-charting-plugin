@@ -9,7 +9,22 @@ Licensed under the MIT license.
 (function ($) {
     function processRawData(plot, series, datapoints) {
         if (series.historyBuffer) {
-            series.data = series.historyBuffer.toSeries(plot.getData().indexOf(series));
+            //series.data = series.historyBuffer.toSeries(plot.getData().indexOf(series));
+
+            var hb = series.historyBuffer;
+            var size = hb.buffer.size;
+            var width = plot.width();
+            var step;
+
+            if (width > 0) {
+                step = Math.floor(hb.buffer.size / plot.width());
+            } else {
+                step = Math.floor(hb.buffer.size / 500);
+            }
+            series.data = series.historyBuffer.query(hb.startIndex(), hb.lastIndex(), step);
+            // remove the last two elements
+            if (series.data.length > 100)
+                series.data.length = series.data.length - 2;
         }
     }
 
