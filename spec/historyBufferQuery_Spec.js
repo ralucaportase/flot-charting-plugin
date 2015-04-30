@@ -51,6 +51,7 @@ describe('History Buffer Query', function () {
         expect(res.length).not.toBeGreaterThan(1024);
         expect(res[0]).toEqual([0, 0]);
         expect(res[1]).toEqual([63, 63]);
+        expect(indexesAreInAscendingOrder(res)).toBe(true);
     });
 
     it('should return a correctly decimated series for steps not multiple of 32', function () {
@@ -64,6 +65,7 @@ describe('History Buffer Query', function () {
         var res = hb.query(0, 32768, 99);
         expect(res[0]).toEqual([0, 0]);
         expect(res[1]).toEqual([98, 98]);
+        expect(indexesAreInAscendingOrder(res)).toBe(true);
     });
 
 
@@ -77,6 +79,7 @@ describe('History Buffer Query', function () {
 
         var res = hb.query(0, 32768, 64);
         expect(hb.query(0, 32768, 64).length).toBeGreaterThan(511);
+        expect(indexesAreInAscendingOrder(res)).toBe(true);
 
         expect(hb.tree.levels[1].nodes.get(0).min).toBe(0);
         expect(hb.tree.levels[1].nodes.get(0).max).toBe(1023);
@@ -92,6 +95,7 @@ describe('History Buffer Query', function () {
 
         var res = hb.query(0, 32768, 64);
         expect(hb.query(32768, 65536, 64).length).toBeGreaterThan(511);
+        expect(indexesAreInAscendingOrder(res)).toBe(true);
 
         expect(hb.tree.levels[1].nodes.get(0).min).toBe(32768);
         expect(hb.tree.levels[1].nodes.get(0).max).toBe(33791);
@@ -167,31 +171,6 @@ describe('History Buffer Query', function () {
             tests: 200
         });
     });
-
-    xit('should give the same answer when using the queries vs toSeries with step 55', function () {
-        var hbSize = 2 * 1024;
-        var hb;
-        var step = 55;
-
-        var property = jsc.forall(jsc.fatarray(jsc.number()), function (array) {
-            hb = new HistoryBuffer(hbSize);
-
-            for (var i = 0; i < array.length; i++) {
-                hb.push(array[i]);
-            }
-
-            var decimatedRes = decimateRawData(hb, step);
-            var query = hb.query(0, hb.count, step);
-
-            return JSON.stringify(decimatedRes) == JSON.stringify(query);
-        });
-
-        expect(property).toHold({
-            size: 2 * hbSize,
-            tests: 10
-        });
-    });
-
 
     describe('Acceleration tree update', function () {
         it('should recompute the minmax for a one level tree on push', function () {
@@ -348,5 +327,16 @@ describe('History Buffer Query', function () {
         }
 
         return decimatedRes;
+    }
+
+    function indexesAreInAscendingOrder(serie) {
+        var res = true;
+        for (var i = 1; i < serie.length; i++) {
+            if (serie[i - 1][0] >= serie[i][0]) {
+                res = false;
+            }
+        }
+
+        return res;
     }
 });

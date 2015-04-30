@@ -292,7 +292,6 @@ $(function (global) {
             firstNode.min = minmax.min;
             firstNode.maxIndex = minmax.maxIndex;
             firstNode.max = minmax.max;
-
         }
     };
 
@@ -444,7 +443,8 @@ $(function (global) {
             var minmax;
             var max, maxIndex, min, minIndex;
             for (i = start; i < end; i += step) {
-                minmax = this.readMinMax(i, i + step);
+                var partialQueryEnd = Math.min(end, i + step);
+                minmax = this.readMinMax(i, partialQueryEnd);
                 maxIndex = minmax.maxIndex;
                 minIndex = minmax.minIndex;
                 if (minIndex === maxIndex) {

@@ -3,14 +3,12 @@
 Copyright (c) 2007-2015 National Instruments
 Licensed under the MIT license.
 */
-/*global jQuery*/
+/*global jQuery, requestAnimationFrame*/
 
 
 (function ($) {
     function processRawData(plot, series, datapoints) {
         if (series.historyBuffer) {
-            //series.data = series.historyBuffer.toSeries(plot.getData().indexOf(series));
-
             var hb = series.historyBuffer;
             var size = hb.buffer.size;
             var width = plot.width();
@@ -21,10 +19,8 @@ Licensed under the MIT license.
             } else {
                 step = Math.floor(hb.buffer.size / 500);
             }
+
             series.data = series.historyBuffer.query(hb.startIndex(), hb.lastIndex(), step);
-            // remove the last two elements
-            if (series.data.length > 100)
-                series.data.length = series.data.length - 2;
         }
     }
 
@@ -68,6 +64,6 @@ Licensed under the MIT license.
     $.plot.plugins.push({
         init: init,
         name: 'charting',
-        version: '0.1'
+        version: '0.2'
     });
 })(jQuery);
