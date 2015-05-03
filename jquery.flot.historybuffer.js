@@ -11,9 +11,6 @@ $(function (global) {
     var branchFactor = 32;
 
     var TreeNode = function () {
-        this.start = 0;
-        this.end = 0;
-        this.parent = 0;
         this.maxIndex = 0;
         this.minIndex = 0;
         this.max = Math.Nan;
