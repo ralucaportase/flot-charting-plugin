@@ -130,7 +130,7 @@ describe('History Buffer Query', function () {
         var hbSize = 100;
         var hb;
 
-        var property = jsc.forall(jsc.fatarray(jsc.number()), function (array) {
+        var property = jsc.forall(shrinkableLongArrayGenerator(jsc.number()), function (array) {
             hb = new HistoryBuffer(hbSize);
 
             for (var i = 0; i < array.length; i++) {
@@ -153,7 +153,9 @@ describe('History Buffer Query', function () {
         var hb;
         var step = 10;
 
-        var property = jsc.forall(jsc.fatarray(jsc.number()), function (array) {
+        var property = jsc.forall(shrinkableLongArrayGenerator(jsc.number()), function (array) {
+            var i;
+            var step = 10;
             hb = new HistoryBuffer(hbSize);
 
             for (var i = 0; i < array.length; i++) {
@@ -339,4 +341,24 @@ describe('History Buffer Query', function () {
 
         return res;
     }
+
+    /*custom shrinkable input generator for arb arrays*/
+    var sLongArrayGenerator = function (arb) {
+        return {
+            generator: function (size) {
+                var arrsize = jsc.random(0, size);
+                var arr = new Array(arrsize);
+                for (var i = 0; i < arrsize; i++) {
+                    arr[i] = arb.generator(size);
+                }
+                return arr;
+            },
+            shrink: jsc.array(arb).shrink,
+            show: jsc.array(arb).show
+        };
+    };
+
+    var shrinkableLongArrayGenerator = function (arb) {
+        return jsc.bless(sLongArrayGenerator(arb));
+    };
 });
