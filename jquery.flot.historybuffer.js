@@ -1,4 +1,4 @@
-/* history buffers datastructure for charting.
+/* history buffer datastructure for charting.
 
 Copyright (c) 2007-2015 National Instruments
 Licensed under the MIT license.
@@ -10,6 +10,7 @@ $(function (global) {
 
     var branchFactor = 32;
 
+    /* tree node object keeps information about min and max values in the subtree bellow it*/
     var TreeNode = function () {
         this.maxIndex = 0;
         this.minIndex = 0;
@@ -17,6 +18,7 @@ $(function (global) {
         this.min = Math.Nan;
     };
 
+    /* a tree level is a heap of tree nodes at a certain depth in the tree*/
     var TreeLevel = function (historyBuffer, level) {
         this.level = level;
         this.step = Math.pow(branchFactor, level);
@@ -25,6 +27,7 @@ $(function (global) {
         this.nodes = new CBuffer(this.capacity);
     };
 
+    /* shift the entire heap of nodes the level to the right*/
     TreeLevel.prototype.shift = function () {
         this.startIndex += this.step;
         this.nodes.push(new TreeNode());
@@ -36,6 +39,7 @@ $(function (global) {
         this.width = width || 1;
         this.buffer = new CBuffer(capacity); /* circular buffer */
         this.count = 0;
+        this.callOnChange = undefined;
         this.changed = false;
         this.lastUpdatedIndex = 0;
         this.firstUpdatedIndex = 0;
@@ -43,17 +47,16 @@ $(function (global) {
         this.buildEmptyAccelerationTree();
     };
 
+    /* change the capacity of the History Buffer and clean all the data inside it*/
     HistoryBuffer.prototype.setCapacity = function (newCapacity) {
         if (newCapacity !== this.capacity) {
             this.buffer = new CBuffer(newCapacity);
             this.capacity = newCapacity;
+            this.buildEmptyAccelerationTree();
         }
     };
 
-    HistoryBuffer.prototype.pop = function () {
-        return this.buffer.pop();
-    };
-
+    /* store an element in the history buffer */
     HistoryBuffer.prototype.push = function (item) {
         this.buffer.push(item);
         this.count++;
@@ -64,15 +67,24 @@ $(function (global) {
         }
     };
 
+
+    /* the index of the oldest element in the buffer*/
     HistoryBuffer.prototype.startIndex = function () {
         return Math.max(0, this.count - this.capacity);
     };
 
+    /* the index of the newest element in the buffer*/
+    HistoryBuffer.prototype.lastIndex = function () {
+        return this.startIndex() + this.buffer.size;
+    };
+
+    /*get the nth element in the buffer*/
     HistoryBuffer.prototype.get = function (index) {
         index -= this.startIndex();
         return this.buffer.get(index);
     };
 
+    /* append an array of elements to the buffer*/
     HistoryBuffer.prototype.appendArray = function (arr) {
         for (var i = 0; i < arr.length; i++) {
             this.buffer.push(arr[i]);
@@ -86,6 +98,7 @@ $(function (global) {
         }
     };
 
+    /* get the tree node at the specified level that keeps the information for the specified index*/
     HistoryBuffer.prototype.getTreeNode = function (level, index) {
         var treeLevel = this.tree.levels[level];
         var levelStep = treeLevel.step;
@@ -100,10 +113,12 @@ $(function (global) {
         return node;
     };
 
+    /* returns an array with all the elements in the buffer*/
     HistoryBuffer.prototype.toArray = function () {
         return this.buffer.toArray();
     };
 
+    /* builds an empty acceleration tree*/
     HistoryBuffer.prototype.buildEmptyAccelerationTree = function () {
         var depth = Math.ceil(Math.log(this.capacity) / Math.log(branchFactor)) - 1;
         if (depth < 1)
@@ -125,8 +140,8 @@ $(function (global) {
     };
 
     /*
-     * Partially populate first level of the tree. Only take into consideration values starting at the startingFromIndex.
-     * All the tree levels should be shifted as necessary (consistent)
+     * Populate the first level of the tree starting at the startingFromIndex.
+     * All the tree levels should be already shifted as necessary before calling this function.
      */
     HistoryBuffer.prototype.populateFirstTreeLevel = function (startingFrom) {
         var currentCount = 0;
@@ -188,8 +203,8 @@ $(function (global) {
     };
 
     /*
-     * Partially populate the rest of the levels of the tree. Only take into consideration values starting at the startingFromIndex.
-     * All the tree levels should be shifted as necessary (consistent)
+     * Populate the upper levels of the tree, starting at the startingFromIndex.
+     * All the tree levels should be already shifted as necessary before calling this function.
      */
     HistoryBuffer.prototype.populateTreeLevel = function (startingFrom, level) {
         var currentCount = 0;
@@ -251,8 +266,7 @@ $(function (global) {
         }
     };
 
-
-    // when shifting the history buffer to the left, update the leftmost nodes in the tree
+    /* Shift the history buffer to the left, updating the leftmost nodes in the tree with the new mins and maxes */
     HistoryBuffer.prototype.shiftTreeLevel = function (level) {
         var startingIndex = this.startIndex();
         var treeLevel = this.tree.levels[level];
@@ -292,6 +306,7 @@ $(function (global) {
         }
     };
 
+    /* update the acceleration tree with the newly added values*/
     HistoryBuffer.prototype.updateAccelerationTree = function () {
         var buffer = this.buffer;
         var level;
@@ -335,32 +350,6 @@ $(function (global) {
         this.callOnChange = f;
     };
 
-    HistoryBuffer.prototype.lastIndex = function () {
-        return this.startIndex() + this.buffer.size;
-    };
-
-    function updateMinMaxFromValue(index, value, minmax) {
-        if (value < minmax.min) {
-            minmax.min = value;
-            minmax.minIndex = index;
-        }
-        if (value > minmax.max) {
-            minmax.max = value;
-            minmax.maxIndex = index;
-        }
-    }
-
-    function updateMinMaxFromNode(node, minmax) {
-        if (node.min < minmax.min) {
-            minmax.min = node.min;
-            minmax.minIndex = node.minIndex;
-        }
-        if (node.max > minmax.max) {
-            minmax.max = node.max;
-            minmax.maxIndex = node.maxIndex;
-        }
-    }
-
     HistoryBuffer.prototype.readMinMax = function (start, end) {
         var intervalSize = end - start;
         var i;
@@ -403,7 +392,7 @@ $(function (global) {
         return minmax;
     };
 
-    // get a subsample of the series, starting at the start sample, ending at the end sample with a provided step
+    /* get a decimated series, starting at the start sample, ending at the end sample with a provided step */
     HistoryBuffer.prototype.query = function (start, end, step) {
         var buffer = this.buffer;
         var i, j;
@@ -458,6 +447,29 @@ $(function (global) {
 
         return data;
     };
+
+    function updateMinMaxFromValue(index, value, minmax) {
+        if (value < minmax.min) {
+            minmax.min = value;
+            minmax.minIndex = index;
+        }
+        if (value > minmax.max) {
+            minmax.max = value;
+            minmax.maxIndex = index;
+        }
+    }
+
+    function updateMinMaxFromNode(node, minmax) {
+        if (node.min < minmax.min) {
+            minmax.min = node.min;
+            minmax.minIndex = node.minIndex;
+        }
+        if (node.max > minmax.max) {
+            minmax.max = node.max;
+            minmax.maxIndex = node.maxIndex;
+        }
+    }
+
 
     if (typeof module === 'object' && module.exports) module.exports = HistoryBuffer;
     else global.HistoryBuffer = HistoryBuffer;
