@@ -22,7 +22,7 @@ Once included in the webpage the plugin is activated by specifing a history buff
     };
 ```
 
-Then you add data to the history buffer 
+Then you add data to the history buffer
 
 ```javascript
     buffer.push(7); // append a number to the buffer
@@ -37,7 +37,7 @@ Theory of operation
 The history buffer is a circular buffer holding the chart data accompanied by an acceleration structure - a tree of min/max values which we call an acceleration tree
 from now on.
 
-The acceleration tree is not enabled for small history buffers.
+The acceleration tree is only enabled for big history buffers.
 
 Performance considerations
 --------------------------
