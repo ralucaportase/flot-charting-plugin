@@ -27,7 +27,7 @@ $(function (global) {
         this.nodes = new CBuffer(this.capacity);
     };
 
-    /* shift the entire heap of nodes the level to the right*/
+    /* shift the entire heap of nodes in the level to the right*/
     TreeLevel.prototype.shift = function () {
         this.startIndex += this.step;
         this.nodes.push(new TreeNode());
