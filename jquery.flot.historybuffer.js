@@ -148,69 +148,6 @@ $(function (global) {
     };
 
     /*
-     * Populate the first level of the tree starting at the startingFromIndex.
-     * All the tree levels should be already shifted as necessary before calling this function.
-     */
-    HistoryBuffer.prototype.populateFirstTreeLevel = function (startingFrom) {
-        var currentCount = 0;
-        var i = 0;
-        var firstSample = true;
-        var node, max, maxIndex, min, minIndex;
-
-        /* align starting from to a branchFactor boundary*/
-        startingFrom = Math.floor(startingFrom / branchFactor) * branchFactor;
-
-        if (this.startIndex() > startingFrom) {
-            startingFrom = this.startIndex();
-            currentCount = startingFrom % branchFactor;
-        }
-
-        for (i = startingFrom; i < this.lastIndex(); i++) {
-            var val = this.get(i);
-
-            if (firstSample) {
-                max = val;
-                maxIndex = i;
-                min = val;
-                minIndex = i;
-
-                firstSample = false;
-            } else {
-                if (val > max) {
-                    max = val;
-                    maxIndex = i;
-                }
-                if (val < min) {
-                    min = val;
-                    minIndex = i;
-                }
-            }
-
-            currentCount++;
-
-            if (currentCount === branchFactor) {
-                currentCount = 0;
-                firstSample = true;
-                node = this.getTreeNode(0, i);
-
-                node.max = max;
-                node.maxIndex = maxIndex;
-                node.min = min;
-                node.minIndex = minIndex;
-            }
-        }
-
-        if (currentCount !== 0) {
-            node = this.getTreeNode(0, i);
-
-            node.max = max;
-            node.maxIndex = maxIndex;
-            node.min = min;
-            node.minIndex = minIndex;
-        }
-    };
-
-    /*
      * Populate the upper levels of the tree, starting at the startingFromIndex.
      * All the tree levels should be already shifted as necessary before calling this function.
      */
@@ -220,7 +157,12 @@ $(function (global) {
         var firstSample = true;
         var node, max, maxIndex, min, minIndex;
 
-        var baseLevel = this.tree.levels[level - 1];
+        var minusOneLevel = {
+            step: 1,
+            startIndex: this.startIndex()
+        };
+
+        var baseLevel = (level === 0) ? minusOneLevel : this.tree.levels[level - 1];
         var currentLevel = this.tree.levels[level];
 
         /* align starting from to a node in the base level boundary*/
@@ -232,21 +174,44 @@ $(function (global) {
         }
 
         for (i = startingFrom; i < this.lastIndex(); i += baseLevel.step) {
-            var cNode = this.getTreeNode(level - 1, i);
-            if (firstSample) {
-                max = cNode.max;
-                maxIndex = cNode.maxIndex;
-                min = cNode.min;
-                minIndex = cNode.minIndex;
-                firstSample = false;
+            if (level === 0) {
+                var val = this.get(i);
+
+                if (firstSample) {
+                    max = val;
+                    maxIndex = i;
+                    min = val;
+                    minIndex = i;
+
+                    firstSample = false;
+                } else {
+                    if (val > max) {
+                        max = val;
+                        maxIndex = i;
+                    }
+                    if (val < min) {
+                        min = val;
+                        minIndex = i;
+                    }
+                }
             } else {
-                if (cNode.max > max) {
+                var cNode = this.getTreeNode(level - 1, i);
+
+                if (firstSample) {
                     max = cNode.max;
                     maxIndex = cNode.maxIndex;
-                }
-                if (cNode.min < min) {
                     min = cNode.min;
                     minIndex = cNode.minIndex;
+                    firstSample = false;
+                } else {
+                    if (cNode.max > max) {
+                        max = cNode.max;
+                        maxIndex = cNode.maxIndex;
+                    }
+                    if (cNode.min < min) {
+                        min = cNode.min;
+                        minIndex = cNode.minIndex;
+                    }
                 }
             }
 
@@ -324,11 +289,7 @@ $(function (global) {
         }
 
         for (level = 0; level < this.tree.depth; level++) {
-            if (level === 0) {
-                this.populateFirstTreeLevel(this.lastUpdatedIndex);
-            } else {
-                this.populateTreeLevel(this.lastUpdatedIndex, level);
-            }
+            this.populateTreeLevel(this.lastUpdatedIndex, level);
         }
 
         this.lastUpdatedIndex = this.startIndex() + buffer.size;
