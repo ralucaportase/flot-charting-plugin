@@ -15,9 +15,9 @@ Licensed under the MIT license.
             var step;
 
             if (width > 0) {
-                step = Math.floor(hb.buffer.size / plot.width());
+                step = Math.floor(size / plot.width());
             } else {
-                step = Math.floor(hb.buffer.size / 500);
+                step = Math.floor(size / 500);
             }
 
             series.data = series.historyBuffer.query(hb.startIndex(), hb.lastIndex(), step);

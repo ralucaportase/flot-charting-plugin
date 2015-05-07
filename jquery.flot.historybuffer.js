@@ -1,4 +1,4 @@
-/* history buffer datastructure for charting.
+/* history buffer data structure for charting.
 
 Copyright (c) 2007-2015 National Instruments
 Licensed under the MIT license.
@@ -8,16 +8,22 @@ Licensed under the MIT license.
 $(function (global) {
     'use strict';
 
-    var branchFactor = 32;
+    /* The branching factor determines how many samples are decimated in a tree node.
+     * It affects the performance and the overhead of the tree.
+     */
+    var branchFactor = 32; // 32 for now. TODO tune the branching factor.
 
-    /* tree node object keeps information about min and max values in the subtree bellow it*/
+    /* a TreeNode object keeps information about min and max values in the subtree below it*/
     var TreeNode = function () {
+        this.init();
+    };
+
+    TreeNode.prototype.init = function () {
         this.maxIndex = 0;
         this.minIndex = 0;
         this.max = Math.Nan;
         this.min = Math.Nan;
     };
-
     /* a tree level is a heap of tree nodes at a certain depth in the tree*/
     var TreeLevel = function (historyBuffer, level) {
         this.level = level;
@@ -27,10 +33,13 @@ $(function (global) {
         this.nodes = new CBuffer(this.capacity);
     };
 
-    /* shift the entire heap of nodes in the level to the right*/
-    TreeLevel.prototype.shift = function () {
+    /* rotate the entire heap of nodes in the level to the left*/
+    TreeLevel.prototype.rotate = function () {
         this.startIndex += this.step;
-        this.nodes.push(new TreeNode());
+
+        var oldestNode = this.nodes.shift(); //reuse the tree nodes to reduce GC
+        oldestNode.init();
+        this.nodes.push(oldestNode);
     };
 
     /* Chart History buffer */
@@ -41,9 +50,9 @@ $(function (global) {
         this.count = 0;
         this.callOnChange = undefined;
         this.changed = false;
+        this.tree = undefined;
         this.lastUpdatedIndex = 0;
         this.firstUpdatedIndex = 0;
-
         this.buildEmptyAccelerationTree();
     };
 
@@ -66,7 +75,6 @@ $(function (global) {
             this.callOnChange();
         }
     };
-
 
     /* the index of the oldest element in the buffer*/
     HistoryBuffer.prototype.startIndex = function () {
@@ -216,7 +224,7 @@ $(function (global) {
         var currentLevel = this.tree.levels[level];
 
         /* align starting from to a node in the base level boundary*/
-        startingFrom = Math.floor(0 / currentLevel.step) * currentLevel.step;
+        startingFrom = Math.floor(startingFrom / currentLevel.step) * currentLevel.step;
 
         if (baseLevel.startIndex > startingFrom) {
             startingFrom = baseLevel.startIndex;
@@ -266,15 +274,15 @@ $(function (global) {
         }
     };
 
-    /* Shift the history buffer to the left, updating the leftmost nodes in the tree with the new mins and maxes */
-    HistoryBuffer.prototype.shiftTreeLevel = function (level) {
+    /* Rotate the history buffer to the left, updating the leftmost nodes in the tree with the new mins and maxes */
+    HistoryBuffer.prototype.rotateTreeLevel = function (level) {
         var startingIndex = this.startIndex();
         var treeLevel = this.tree.levels[level];
 
         var alignedStartIndex = Math.floor(startingIndex / treeLevel.step) * treeLevel.step;
 
         while (treeLevel.startIndex < alignedStartIndex) {
-            treeLevel.shift();
+            treeLevel.rotate();
         }
 
         /* update the first node in level */
@@ -285,6 +293,7 @@ $(function (global) {
                 maxIndex: startingIndex,
                 max: this.get(startingIndex)
             };
+
             var i;
             var firstNode = treeLevel.nodes.get(0);
 
@@ -292,7 +301,6 @@ $(function (global) {
                 for (i = startingIndex; i < (alignedStartIndex + branchFactor); i++) {
                     updateMinMaxFromValue(i, this.get(i), minmax);
                 }
-
             } else {
                 for (i = startingIndex; i < (alignedStartIndex + treeLevel.step); i += treeLevel.step / branchFactor) {
                     updateMinMaxFromNode(this.getTreeNode(level - 1, i), minmax);
@@ -312,7 +320,7 @@ $(function (global) {
         var level;
 
         for (level = 0; level < this.tree.depth; level++) {
-            this.shiftTreeLevel(level);
+            this.rotateTreeLevel(level);
         }
 
         for (level = 0; level < this.tree.depth; level++) {
@@ -366,6 +374,7 @@ $(function (global) {
             for (i = start; i < end; i++) {
                 updateMinMaxFromValue(i, this.get(i), minmax);
             }
+
             return minmax;
         }
 
@@ -410,6 +419,7 @@ $(function (global) {
         if (start < firstIndex) {
             start = firstIndex;
         }
+
         if (start > lastIndex) {
             start = lastIndex;
         }
@@ -417,6 +427,7 @@ $(function (global) {
         if (end < firstIndex) {
             end = firstIndex;
         }
+
         if (end > lastIndex) {
             end = lastIndex;
         }
@@ -469,7 +480,6 @@ $(function (global) {
             minmax.maxIndex = node.maxIndex;
         }
     }
-
 
     if (typeof module === 'object' && module.exports) module.exports = HistoryBuffer;
     else global.HistoryBuffer = HistoryBuffer;
