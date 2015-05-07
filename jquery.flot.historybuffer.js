@@ -33,7 +33,7 @@ $(function (global) {
         this.nodes = new CBuffer(this.capacity);
     };
 
-    /* rotate the entire heap of nodes in the level to the left*/
+    /* rotate the nodes in the TreeLevel to the left.*/
     TreeLevel.prototype.rotate = function () {
         this.startIndex += this.step;
 
@@ -239,7 +239,7 @@ $(function (global) {
         }
     };
 
-    /* Rotate the history buffer to the left, updating the leftmost nodes in the tree with the new mins and maxes */
+    /* Rotate the history buffer to the left, updating the leftmost nodes in the tree with the new mins and maxes*/
     HistoryBuffer.prototype.rotateTreeLevel = function (level) {
         var startingIndex = this.startIndex();
         var treeLevel = this.tree.levels[level];
