@@ -1,4 +1,4 @@
-/* global $, describe, it, xit, after, beforeEach, afterEach, expect, jasmine, spyOn, HistoryBuffer */
+/* global $, describe, it, beforeEach, afterEach, expect, jasmine, HistoryBuffer */
 /* jshint browser: true*/
 /* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js*,../jquery.flot.js,../jquery.flot.charting.js */
 
@@ -30,7 +30,7 @@ describe('Flot charting: ', function () {
     it('should be possible to specify a historyBuffer when creating the plot', function () {
         var hb = new HistoryBuffer(10, 1);
         hb.push(33);
-        plot = $.plot("#placeholder", [[]], {
+        plot = $.plot('#placeholder', [[]], {
             series: {
                 historyBuffer: hb
             }
@@ -44,7 +44,7 @@ describe('Flot charting: ', function () {
         var hb = new HistoryBuffer(1, 1);
         hb.push(33);
         hb.push(34);
-        plot = $.plot("#placeholder", [[]], {
+        plot = $.plot('#placeholder', [[]], {
             series: {
                 historyBuffer: hb
             }

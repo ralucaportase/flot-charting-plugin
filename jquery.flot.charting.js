@@ -7,7 +7,9 @@ Licensed under the MIT license.
 
 
 (function ($) {
-    function processRawData(plot, series, datapoints) {
+    'use strict';
+
+    function processRawData(plot, series) {
         if (series.historyBuffer) {
             var hb = series.historyBuffer;
             var size = hb.buffer.size;

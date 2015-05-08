@@ -1,4 +1,4 @@
-/* global $, describe, it, xit, after, beforeEach, afterEach, expect, jasmine, spyOn, HistoryBuffer */
+/* global describe, it, expect, jasmine, HistoryBuffer */
 /* jshint browser: true*/
 
 /* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js* */

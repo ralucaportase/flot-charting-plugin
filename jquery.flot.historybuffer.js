@@ -129,8 +129,10 @@ $(function (global) {
     /* builds an empty acceleration tree*/
     HistoryBuffer.prototype.buildEmptyAccelerationTree = function () {
         var depth = Math.ceil(Math.log(this.capacity) / Math.log(branchFactor)) - 1;
-        if (depth < 1)
+        if (depth < 1) {
             depth = 1;
+        }
+
         var tree = {
             depth: depth,
             levels: []
@@ -298,7 +300,6 @@ $(function (global) {
 
     HistoryBuffer.prototype.toSeries = function (index) {
         var buffer = this.buffer;
-        var j;
 
         var data = [];
 
@@ -364,8 +365,7 @@ $(function (global) {
 
     /* get a decimated series, starting at the start sample, ending at the end sample with a provided step */
     HistoryBuffer.prototype.query = function (start, end, step) {
-        var buffer = this.buffer;
-        var i, j;
+        var i;
 
         var data = [];
 
@@ -399,7 +399,7 @@ $(function (global) {
             }
         } else {
             var minmax;
-            var max, maxIndex, min, minIndex;
+            var maxIndex, minIndex;
             for (i = start; i < end; i += step) {
                 var partialQueryEnd = Math.min(end, i + step);
                 minmax = this.readMinMax(i, partialQueryEnd);
@@ -442,6 +442,9 @@ $(function (global) {
         }
     }
 
-    if (typeof module === 'object' && module.exports) module.exports = HistoryBuffer;
-    else global.HistoryBuffer = HistoryBuffer;
-}(this));
+    if (typeof module === 'object' && module.exports) {
+        module.exports = HistoryBuffer;
+    } else {
+        global.HistoryBuffer = HistoryBuffer;
+    }
+})(this);

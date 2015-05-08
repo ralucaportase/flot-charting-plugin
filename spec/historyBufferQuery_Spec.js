@@ -1,4 +1,4 @@
-/* global $, describe, it, xit, after, beforeEach, afterEach, expect, jasmine, spyOn, HistoryBuffer, jsc */
+/* global describe, it, expect, jasmine, HistoryBuffer, jsc */
 /* jshint browser: true*/
 
 /* brackets-xunit: includes=../lib/cbuffer.js,../lib/jsverify.standalone.js,../lib/jasmineHelpers2.js,../jquery.flot.historybuffer.js */
@@ -140,7 +140,7 @@ describe('History Buffer Query', function () {
             var toSeries = hb.toSeries();
             var query = hb.query(0, hb.count, 1);
 
-            return JSON.stringify(toSeries) == JSON.stringify(query);
+            return JSON.stringify(toSeries) === JSON.stringify(query);
         });
 
         expect(property).toHold({
@@ -154,8 +154,6 @@ describe('History Buffer Query', function () {
         var step = 10;
 
         var property = jsc.forall(shrinkableLongArrayGenerator(jsc.number()), function (array) {
-            var i;
-            var step = 10;
             hb = new HistoryBuffer(hbSize);
 
             for (var i = 0; i < array.length; i++) {
@@ -165,7 +163,7 @@ describe('History Buffer Query', function () {
             var decimatedRes = decimateRawData(hb, step);
             var query = hb.query(0, hb.count, step);
 
-            return JSON.stringify(decimatedRes) == JSON.stringify(query);
+            return JSON.stringify(decimatedRes) === JSON.stringify(query);
         });
 
         expect(property).toHold({
