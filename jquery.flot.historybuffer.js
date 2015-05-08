@@ -3,9 +3,9 @@
 Copyright (c) 2007-2015 National Instruments
 Licensed under the MIT license.
 */
-/*globals $, CBuffer, module*/
+/*globals CBuffer, module*/
 
-$(function (global) {
+(function (global) {
     'use strict';
 
     /* The branching factor determines how many samples are decimated in a tree node.
