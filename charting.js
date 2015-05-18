@@ -1,4 +1,4 @@
-/*global jQuery, $, HistoryBuffer*/
+/*global $, HistoryBuffer*/
 /*jshint browser: true*/
 
 $(function () {
@@ -20,12 +20,7 @@ $(function () {
         }
     }
 
-    function updateChart() {
-        setTimeout(updateChart, 16);
-        updateData();
-    }
-
-    plot = $.plot("#placeholder", [], {
+    plot = $.plot('#placeholder', [], {
         series: {
             historyBuffer: buffer,
             lines: {
@@ -37,5 +32,5 @@ $(function () {
         }
     });
 
-    setInterval(updateData, 16)
+    setInterval(updateData, 16);
 });
