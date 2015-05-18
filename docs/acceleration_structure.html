@@ -34,7 +34,9 @@
     </div>
     <script src="../lib/d3.v3.min.js"></script>
     <script>
-        var buffer = new HistoryBuffer(32, 1);
+        var buffer = new HistoryBuffer(1, 1);
+        buffer.setBranchingFactor(4);
+        buffer.setCapacity(32);
 
         var plot = $.plot('#placeholder', [], {
             series: {

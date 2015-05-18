@@ -56,6 +56,10 @@ Licensed under the MIT license.
         this.buildEmptyAccelerationTree();
     };
 
+    HistoryBuffer.prototype.setBranchingFactor = function (b) {
+        branchFactor = b;
+    };
+
     /* change the capacity of the History Buffer and clean all the data inside it*/
     HistoryBuffer.prototype.setCapacity = function (newCapacity) {
         if (newCapacity !== this.capacity) {
