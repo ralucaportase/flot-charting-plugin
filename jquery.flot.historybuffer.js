@@ -125,6 +125,29 @@ Licensed under the MIT license.
         return node;
     };
 
+    /* get the tree nodes at the specified level that keeps the information for the specified interval*/
+    HistoryBuffer.prototype.getTreeNodes = function (level, start, end) {
+        var nodes = [];
+        var treeLevel = this.tree.levels[level];
+        var levelStep = treeLevel.step;
+
+        var levelIndex = Math.floor((start - treeLevel.startIndex) / levelStep);
+
+        if ((levelIndex < 0) || (levelIndex >= treeLevel.capacity) || levelIndex > end) {
+            return nodes;
+        }
+
+        while (levelIndex < end) {
+            if (levelIndex >= start) {
+                nodes.push(treeLevel.nodes.get(levelIndex));
+            }
+            levelIndex += treeLevel.step;
+        }
+
+        return nodes;
+    };
+
+
     /* returns an array with all the elements in the buffer*/
     HistoryBuffer.prototype.toArray = function () {
         return this.buffer.toArray();
