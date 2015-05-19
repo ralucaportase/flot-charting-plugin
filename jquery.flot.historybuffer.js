@@ -147,7 +147,6 @@ Licensed under the MIT license.
         return nodes;
     };
 
-
     /* returns an array with all the elements in the buffer*/
     HistoryBuffer.prototype.toArray = function () {
         return this.buffer.toArray();

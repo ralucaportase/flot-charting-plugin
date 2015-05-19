@@ -6,7 +6,7 @@ $(function () {
     var width = 500,
         height = 500;
     var diameter = 300;
-    var duration = 800;
+    var duration = 500;
     var root;
 
     var buffer = new HistoryBuffer(1, 1);
@@ -25,20 +25,37 @@ $(function () {
         }
     });
 
+    var counter = 0;
+
     for (var i = 0; i < 32; i++) {
-        var sin = Math.sin(i * 0.5);
+        var sin = 10 * Math.sin(counter++ * 0.5);
         buffer.push(sin);
     }
+
+    function updateData() {
+        var sin = 10 * Math.sin(counter++ * 0.5);
+        buffer.push(sin);
+        root = getData();
+        drawTree();
+    }
+
+    setInterval(updateData, 500);
 
     function levelToD3(buffer, depth, start, end) {
         var accTree = buffer.tree;
         if (depth < 0) {
-            return null;
+            var childs = [];
+
+            for (var i = start; i < end; i++) {
+                childs.push({
+                    name: '' + i + ', ' + buffer.get(i).toFixed(1)
+                });
+            }
+            return childs;
         }
+
         var level = accTree.levels[depth];
-
         start = Math.floor(start / level.step) * level.step;
-
         var nodes = buffer.getTreeNodes(depth, start, end);
 
         return nodes.map(function (l) {
@@ -52,12 +69,12 @@ $(function () {
     function accTree2d3(buffer) {
         var accTree = buffer.tree;
         var depth = accTree.depth;
+        var level = accTree.levels[depth - 1];
 
-        return levelToD3(buffer, depth - 1, buffer.startIndex(), buffer.lastIndex());
+        return levelToD3(buffer, depth - 1, Math.floor(buffer.startIndex() / level.step) * level.step, buffer.lastIndex());
     }
 
     function getData() {
-
         var root = {
             name: 'root',
             children: accTree2d3(buffer)
@@ -72,6 +89,8 @@ $(function () {
 
         return root;
     }
+
+    root = getData();
 
     function change() {
         if (this.value === 'radialtree') {
@@ -109,7 +128,6 @@ $(function () {
             .transition()
             .duration(duration)
             .style('stroke', '#984ea3');
-
     }
 
     function transitionToTree() {
@@ -141,9 +159,6 @@ $(function () {
     var tree = d3.layout.tree()
         .size([height, width - 160]);
 
-    var cluster = d3.layout.cluster()
-        .size([height, width - 160]);
-
     var diagonal = d3.svg.diagonal()
         .projection(function (d) {
             return [d.y, d.x];
@@ -167,40 +182,48 @@ $(function () {
         .append('g')
         .attr('transform', 'translate(40,0)');
 
-    root = getData();
+    var nodes, links, node, link;
 
-    var nodes = cluster.nodes(root),
-        links = cluster.links(nodes);
+    function drawTree() {
+        svg.selectAll('.node').remove();
+        svg.selectAll('.link').remove();
 
-    var link = svg.selectAll('.link')
-        .data(links)
-        .enter()
-        .append('path')
-        .attr('class', 'link')
-        .style('stroke', '#8da0cb')
-        .attr('d', diagonal);
+        nodes = tree.nodes(root);
+        links = tree.links(nodes);
 
-    var node = svg.selectAll('.node')
-        .data(nodes)
-        .enter()
-        .append('g')
-        .attr('class', 'node')
-        .attr('transform', function (d) {
-            return 'translate(' + d.y + ',' + d.x + ')';
-        });
+        link = svg.selectAll('.link')
+            .data(links)
+            .enter()
+            .append('path')
+            .attr('class', 'link')
+            .style('stroke', '#8da0cb')
+            .attr('d', diagonal);
 
-    node.append('circle')
-        .attr('r', 4.5)
-        .style('stroke', '#e41a1c');
-    node.append('text')
-        .attr('dx', function (d) {
-            return d.children ? -8 : 8;
-        })
-        .attr('dy', 3)
-        .style('text-anchor', function (d) {
-            return d.children ? 'end' : 'start';
-        })
-        .text(function (d) {
-            return d.name;
-        });
+        node = svg.selectAll('.node')
+            .data(nodes)
+            .enter()
+            .append('g')
+            .attr('class', 'node')
+            .attr('transform', function (d) {
+                return 'translate(' + d.y + ',' + d.x + ')';
+            });
+
+        node.append('circle')
+            .attr('r', 4.5)
+            .style('stroke', '#e41a1c');
+
+        node.append('text')
+            .attr('dx', function (d) {
+                return d.children ? -8 : 8;
+            })
+            .attr('dy', 3)
+            .style('text-anchor', function (d) {
+                return d.children ? 'end' : 'start';
+            })
+            .text(function (d) {
+                return d.name;
+            });
+    }
+
+    drawTree();
 });
