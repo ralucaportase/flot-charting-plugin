@@ -8,6 +8,7 @@ $(function () {
     var diameter = 300;
     var duration = 500;
     var root;
+    var radial = false;
 
     var buffer = new HistoryBuffer(1, 1);
     buffer.setBranchingFactor(4);
@@ -39,7 +40,7 @@ $(function () {
         drawTree();
     }
 
-    setInterval(updateData, 500);
+    setInterval(updateData, 2000);
 
     function levelToD3(buffer, depth, start, end) {
         var accTree = buffer.tree;
@@ -78,13 +79,6 @@ $(function () {
         var root = {
             name: 'root',
             children: accTree2d3(buffer)
-                /*
-                            children: buffer.toSeries().map(function (point) {
-                                return {
-                                    name: '' + point[0], // + ', ' + point[1].toFixed(2),
-                                    children: []
-                                };
-                            })*/
         };
 
         return root;
@@ -128,6 +122,7 @@ $(function () {
             .transition()
             .duration(duration)
             .style('stroke', '#984ea3');
+        radial = true;
     }
 
     function transitionToTree() {
@@ -154,6 +149,7 @@ $(function () {
             .transition()
             .duration(duration)
             .style('stroke', '#377eb8');
+        radial = false;
     }
 
     var tree = d3.layout.tree()
@@ -188,8 +184,13 @@ $(function () {
         svg.selectAll('.node').remove();
         svg.selectAll('.link').remove();
 
-        nodes = tree.nodes(root);
-        links = tree.links(nodes);
+        if (radial) {
+            nodes = radialTree.nodes(root);
+            links = radialTree.links(nodes);
+        } else {
+            nodes = tree.nodes(root);
+            links = tree.links(nodes);
+        }
 
         link = svg.selectAll('.link')
             .data(links)
@@ -197,7 +198,7 @@ $(function () {
             .append('path')
             .attr('class', 'link')
             .style('stroke', '#8da0cb')
-            .attr('d', diagonal);
+            .attr('d', radial ? radialDiagonal : diagonal);
 
         node = svg.selectAll('.node')
             .data(nodes)
@@ -205,7 +206,10 @@ $(function () {
             .append('g')
             .attr('class', 'node')
             .attr('transform', function (d) {
-                return 'translate(' + d.y + ',' + d.x + ')';
+                if (radial)
+                    return 'rotate(' + (d.x - 90) + ')translate(' + d.y + ')';
+                else
+                    return 'translate(' + d.y + ',' + d.x + ')';
             });
 
         node.append('circle')
