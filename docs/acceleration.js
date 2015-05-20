@@ -27,12 +27,7 @@ $(function () {
     });
 
     var counter = 0;
-/*
-    for (var i = 0; i < 32; i++) {
-        var sin = 10 * Math.sin(counter++ * 0.5);
-        buffer.push(sin);
-    }
-*/
+
     function updateData() {
         var sin = 10 * Math.sin(counter++ * 0.5);
         buffer.push(sin);
@@ -48,8 +43,10 @@ $(function () {
             var childs = [];
 
             for (var i = start; i < end; i++) {
+                if (i < buffer.startIndex() || i >= buffer.lastIndex())
+                    continue;
                 var val = buffer.get(i);
-                if (val)
+                if (val !== undefined)
                 childs.push({
                     name: '' + i + ', ' + buffer.get(i).toFixed(1)
                 });
@@ -59,14 +56,21 @@ $(function () {
 
         var level = accTree.levels[depth];
         start = Math.floor(start / level.step) * level.step;
-        var nodes = buffer.getTreeNodes(depth, start, end);
-
-        return nodes.map(function (l) {
-            return {
-                name: 'level' + level.level,
-                children: levelToD3(buffer, depth - 1, start, start += level.step)
-            };
-        });
+        
+        var nodes = [];
+        while(start < end) {
+            var node = buffer.getTreeNode(depth, start);
+            
+            if (node) {
+                nodes.push({
+                    name: 'level' + level.level,
+                    children: levelToD3(buffer, depth - 1, start, start + level.step)
+                });
+            }
+            
+            start += level.step;
+        }
+        return nodes;
     }
 
     function accTree2d3(buffer) {
@@ -165,14 +169,13 @@ $(function () {
     var radialTree = d3.layout.tree()
         .size([360, diameter / 2])
         .separation(function (a, b) {
-            return (a.parent === b.parent ? 1 : 2) / a.depth;
+            return (a.parent === b.parent ? 1 : 1) / a.depth;
         });
 
     var radialDiagonal = d3.svg.diagonal.radial()
         .projection(function (d) {
             return [d.y, d.x / 180 * Math.PI];
         });
-
 
     var svg = d3.select('body').append('svg')
         .attr('width', width)
@@ -199,7 +202,7 @@ $(function () {
             .enter()
             .append('path')
             .attr('class', 'link')
-            .style('stroke', '#8da0cb')
+            .style('stroke', '#adc0fb')
             .attr('d', radial ? radialDiagonal : diagonal);
 
         node = svg.selectAll('.node')
@@ -216,7 +219,7 @@ $(function () {
 
         node.append('circle')
             .attr('r', 4.5)
-            .style('stroke', '#e41a1c');
+            .style('stroke', '#377eb8');
 
         node.append('text')
             .attr('dx', function (d) {

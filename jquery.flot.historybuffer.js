@@ -12,6 +12,7 @@ Licensed under the MIT license.
      * It affects the performance and the overhead of the tree.
      */
     var branchFactor = 32; // 32 for now. TODO tune the branching factor.
+    var accelerationTreeActivationSize = 1024; // the size at which the acceleration tree starts to provide improvements. TO DO.
 
     /* a TreeNode object keeps information about min and max values in the subtree below it*/
     var TreeNode = function () {
@@ -24,6 +25,7 @@ Licensed under the MIT license.
         this.max = Math.Nan;
         this.min = Math.Nan;
     };
+    
     /* a tree level is a heap of tree nodes at a certain depth in the tree*/
     var TreeLevel = function (historyBuffer, level) {
         this.level = level;
