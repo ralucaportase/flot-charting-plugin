@@ -27,12 +27,12 @@ $(function () {
     });
 
     var counter = 0;
-
+/*
     for (var i = 0; i < 32; i++) {
         var sin = 10 * Math.sin(counter++ * 0.5);
         buffer.push(sin);
     }
-
+*/
     function updateData() {
         var sin = 10 * Math.sin(counter++ * 0.5);
         buffer.push(sin);
@@ -48,6 +48,8 @@ $(function () {
             var childs = [];
 
             for (var i = start; i < end; i++) {
+                var val = buffer.get(i);
+                if (val)
                 childs.push({
                     name: '' + i + ', ' + buffer.get(i).toFixed(1)
                 });
@@ -72,7 +74,7 @@ $(function () {
         var depth = accTree.depth;
         var level = accTree.levels[depth - 1];
 
-        return levelToD3(buffer, depth - 1, Math.floor(buffer.startIndex() / level.step) * level.step, buffer.lastIndex());
+        return levelToD3(buffer, depth - 1, buffer.startIndex(), buffer.lastIndex());
     }
 
     function getData() {
