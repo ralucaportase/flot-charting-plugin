@@ -177,7 +177,7 @@ $(function () {
             return [d.y, d.x / 180 * Math.PI];
         });
 
-    var svg = d3.select('body').append('svg')
+    var svg = d3.select('#treeHolder').append('svg')
         .attr('width', width)
         .attr('height', height)
         .append('g')
@@ -202,7 +202,7 @@ $(function () {
             .enter()
             .append('path')
             .attr('class', 'link')
-            .style('stroke', '#adc0fb')
+            .style('stroke', '#ade0fb')
             .attr('d', radial ? radialDiagonal : diagonal);
 
         node = svg.selectAll('.node')

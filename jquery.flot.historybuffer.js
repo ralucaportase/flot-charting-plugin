@@ -196,7 +196,7 @@ Licensed under the MIT license.
         var currentLevel = this.tree.levels[level];
 
         /* align starting from to a node in the base level boundary*/
-        startingFrom = Math.floor(startingFrom / currentLevel.step) * currentLevel.step;
+        startingFrom = floorInBase(startingFrom, currentLevel.step);
 
         if (baseLevel.startIndex > startingFrom) {
             startingFrom = baseLevel.startIndex;
@@ -274,7 +274,7 @@ Licensed under the MIT license.
         var startingIndex = this.startIndex();
         var treeLevel = this.tree.levels[level];
 
-        var alignedStartIndex = Math.floor(startingIndex / treeLevel.step) * treeLevel.step;
+        var alignedStartIndex = floorInBase(startingIndex, treeLevel.step);
 
         while (treeLevel.startIndex < alignedStartIndex) {
             treeLevel.rotate();
@@ -370,7 +370,7 @@ Licensed under the MIT license.
 
         var step = Math.pow(branchFactor, level);
         var truncatedStart = Math.ceil(start / step) * step;
-        var truncatedEnd = Math.floor(end / step) * step;
+        var truncatedEnd = floorInBase(end, step);
 
         if (start !== truncatedStart) {
             minmax = this.readMinMax(start, truncatedStart);
@@ -380,7 +380,7 @@ Licensed under the MIT license.
             updateMinMaxFromNode(this.readMinMax(truncatedEnd, end), minmax);
         }
 
-        var truncatedBufferStart = Math.floor(this.startIndex() / step) * step;
+        var truncatedBufferStart = floorInBase(this.startIndex(), step);
         var begin = (truncatedStart - truncatedBufferStart) / step;
         var finish = (truncatedEnd - truncatedBufferStart) / step;
 
@@ -468,6 +468,11 @@ Licensed under the MIT license.
             minmax.max = node.max;
             minmax.maxIndex = node.maxIndex;
         }
+    }
+    
+    // round to nearby lower multiple of base
+    function floorInBase(n, base) {
+        return base * Math.floor(n / base);
     }
 
     if (typeof module === 'object' && module.exports) {
