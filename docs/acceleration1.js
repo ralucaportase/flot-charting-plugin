@@ -3,9 +3,9 @@
 $(function () {
     'use strict';
 
-    var width = 500,
-        height = 500;
-    var diameter = 300;
+    var width = 600,
+        height = 600;
+    var diameter = 500;
     var duration = 500;
     var root;
     var radial = false;
@@ -35,7 +35,7 @@ $(function () {
         drawTree();
     }
 
-    setInterval(updateData, 2000);
+    setInterval(updateData, 500);
 
     function levelToD3(buffer, depth, start, end) {
         var accTree = buffer.tree;
@@ -43,13 +43,18 @@ $(function () {
             var childs = [];
 
             for (var i = start; i < end; i++) {
-                if (i < buffer.startIndex() || i >= buffer.lastIndex()) {
+                if (i < buffer.startIndex() || i >= (buffer.startIndex() + buffer.capacity)) {
                     continue;
                 }
                 var val = buffer.get(i);
                 if (val !== undefined) {
                     childs.push({
                         name: '' + i + ', ' + buffer.get(i).toFixed(1)
+                    });
+                } else {
+                    childs.push({
+                        name: '',
+                        empty: true
                     });
                 }
             }
@@ -58,18 +63,18 @@ $(function () {
 
         var level = accTree.levels[depth];
         start = Math.floor(start / level.step) * level.step;
-        
+
         var nodes = [];
-        while(start < end) {
+        while (start < end) {
             var node = buffer.getTreeNode(depth, start);
-            
+
             if (node) {
                 nodes.push({
-                    name: 'level' + level.level,
+                    name: node.max === undefined ? '' : '[' + node.max.toFixed(1) + ', ' + node.min.toFixed(1) + ']',
                     children: levelToD3(buffer, depth - 1, start, start + level.step)
                 });
             }
-            
+
             start += level.step;
         }
         return nodes;
@@ -78,14 +83,16 @@ $(function () {
     function accTree2d3(buffer) {
         var accTree = buffer.tree;
         var depth = accTree.depth;
+        var level = accTree.levels[depth - 1];
 
-        return levelToD3(buffer, depth - 1, buffer.startIndex(), buffer.lastIndex());
+        return levelToD3(buffer, depth - 1, level.startIndex, level.startIndex + level.capacity * level.step);
     }
 
     function getData() {
         var root = {
-            name: 'root',
-            children: accTree2d3(buffer)
+            name: '',
+            children: accTree2d3(buffer),
+            root: true
         };
 
         return root;
@@ -122,7 +129,7 @@ $(function () {
             .transition()
             .duration(duration)
             .attr('transform', function (d) {
-                return 'rotate(' + (d.x - 90) + ')translate(' + d.y + ')';
+                return 'rotate(' + (d.x) + ')translate(' + d.y + ')';
             });
 
         node.select('circle')
@@ -191,6 +198,13 @@ $(function () {
         svg.selectAll('.link').remove();
 
         if (radial) {
+            svg.attr('transform', 'translate(' + (width / 2) + ',' +
+                (height / 2) + '),rotate(' + (buffer.startIndex() / buffer.capacity * 360) + ')');
+        } else {
+            svg.attr('transform', 'translate(40,0)');
+        }
+
+        if (radial) {
             nodes = radialTree.nodes(root);
             links = radialTree.links(nodes);
         } else {
@@ -220,8 +234,12 @@ $(function () {
             });
 
         node.append('circle')
-            .attr('r', 4.5)
-            .style('stroke', '#377eb8');
+            .attr('r', function (d) {
+                return d.root ? 8.5 : 4.5;
+            })
+            .style('stroke', function (d) {
+                return d.empty ? '#ff0000' : '#377eb8';
+            });
 
         node.append('text')
             .attr('dx', function (d) {
