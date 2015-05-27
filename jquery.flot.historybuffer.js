@@ -12,7 +12,7 @@ Licensed under the MIT license.
      * It affects the performance and the overhead of the tree.
      */
     var branchFactor = 32; // 32 for now. TODO tune the branching factor.
-    var accelerationTreeActivationSize = 1024; // the size at which the acceleration tree starts to provide improvements. TO DO.
+    //var accelerationTreeActivationSize = 1024; // the size at which the acceleration tree starts to provide improvements. TO DO.
 
     /* a TreeNode object keeps information about min and max values in the subtree below it*/
     var TreeNode = function () {
@@ -25,7 +25,7 @@ Licensed under the MIT license.
         this.max = Math.Nan;
         this.min = Math.Nan;
     };
-    
+
     /* a tree level is a heap of tree nodes at a certain depth in the tree*/
     var TreeLevel = function (historyBuffer, level) {
         this.level = level;
@@ -48,10 +48,18 @@ Licensed under the MIT license.
     var HistoryBuffer = function (capacity, width) {
         this.capacity = capacity || 1024;
         this.width = width || 1;
-        this.buffer = new CBuffer(capacity); /* circular buffer */
+        this.buffers = []; /* circular buffers */
+
+        for (var i = 0; i < this.width; i++) {
+            this.buffers.push(new CBuffer(capacity));
+        }
+
+        this.buffer = this.buffers[0];
+
         this.count = 0;
         this.callOnChange = undefined;
         this.changed = false;
+        this.trees = [];
         this.tree = undefined;
         this.lastUpdatedIndex = 0;
         this.firstUpdatedIndex = 0;
@@ -71,9 +79,22 @@ Licensed under the MIT license.
         }
     };
 
+    /* store an element in the history buffer, don't update stats */
+    HistoryBuffer.prototype.push_noStatsUpdate = function (item) {
+        if (this.width === 1) {
+            this.buffer.push(item);
+        } else {
+            if (Array.isArray(item) && item.length === this.width) {
+                for (var i = 0; i < this.width; i++) {
+                    this.buffers[i].push(item[i]);
+                }
+            }
+        }
+    };
+
     /* store an element in the history buffer */
     HistoryBuffer.prototype.push = function (item) {
-        this.buffer.push(item);
+        this.push_noStatsUpdate(item);
         this.count++;
 
         this.changed = true;
@@ -95,13 +116,23 @@ Licensed under the MIT license.
     /*get the nth element in the buffer*/
     HistoryBuffer.prototype.get = function (index) {
         index -= this.startIndex();
-        return this.buffer.get(index);
+        if (this.width === 1) {
+            return this.buffer.get(index);
+        } else {
+            var res = [];
+
+            for (var i = 0; i < this.width; i++) {
+                res.push(this.buffers[i].get(index));
+            }
+
+            return res;
+        }
     };
 
     /* append an array of elements to the buffer*/
     HistoryBuffer.prototype.appendArray = function (arr) {
         for (var i = 0; i < arr.length; i++) {
-            this.buffer.push(arr[i]);
+            this.push_noStatsUpdate(arr[i]);
         }
 
         this.count += arr.length;
@@ -151,7 +182,17 @@ Licensed under the MIT license.
 
     /* returns an array with all the elements in the buffer*/
     HistoryBuffer.prototype.toArray = function () {
-        return this.buffer.toArray();
+        if (this.width === 1) {
+            return this.buffer.toArray();
+        } else {
+            var start = this.startIndex(),
+                last = this.lastIndex(),
+                res = [];
+            for (var i = start; i < last; i++) {
+                res.push(this.get(i));
+            }
+            return res;
+        }
     };
 
     /* builds an empty acceleration tree*/
@@ -335,7 +376,7 @@ Licensed under the MIT license.
 
         for (var i = 0; i < buffer.size; i++) {
             if (this.width > 1) {
-                data.push([i + start, buffer.get(i)[index]]);
+                data.push([i + start, this.buffers[index].get(i)]);
             } else {
                 data.push([i + start, buffer.get(i)]);
             }
@@ -469,7 +510,7 @@ Licensed under the MIT license.
             minmax.maxIndex = node.maxIndex;
         }
     }
-    
+
     // round to nearby lower multiple of base
     function floorInBase(n, base) {
         return base * Math.floor(n / base);

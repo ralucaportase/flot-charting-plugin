@@ -1,4 +1,4 @@
-/* global describe, it, expect, jasmine, HistoryBuffer */
+/* global describe, it, xit, expect, jasmine, HistoryBuffer */
 /* jshint browser: true*/
 
 /* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js* */
@@ -29,6 +29,26 @@ describe('History Buffer', function () {
         });
     });
 
+    xit('appendArray method should work with arrays bigger that the hb capacity', function () {
+        var hb = new HistoryBuffer(3);
+
+        hb.appendArray([1, 2, 3, 4]);
+
+        [2, 3, 4, undefined].forEach(function (exp, i) {
+            expect(hb.get(i + 1)).toBe(exp);
+        });
+    });
+
+    it('the appendArray method should work for plots with two data series', function () {
+        var hb = new HistoryBuffer(10, 2);
+
+        hb.appendArray([[1, 1], [2, 2], [3, 3]]);
+
+        [[1, 1], [2, 2], [3, 3], [undefined, undefined]].forEach(function (exp, i) {
+            expect(hb.get(i)).toEqual(exp);
+        });
+    });
+
     it('should have a toArray method', function () {
         var hb = new HistoryBuffer(10);
 
@@ -37,14 +57,14 @@ describe('History Buffer', function () {
         expect(hb.toArray()).toEqual([1, 2, 3]);
     });
 
-    it('should have a toArray method', function () {
-        var hb = new HistoryBuffer(3);
+    it('toArray method should work for plots with two data series', function () {
+        var hb = new HistoryBuffer(10, 2);
 
-        hb.appendArray([1, 2, 3]);
-        hb.push(4);
+        hb.appendArray([[1, 2], [2, 3], [3, 4]]);
 
-        expect(hb.toArray()).toEqual([2, 3, 4]);
+        expect(hb.toArray()).toEqual([[1, 2], [2, 3], [3, 4]]);
     });
+
 
     describe('Acceleration tree', function () {
         it('should be created on hb creation', function () {
