@@ -29,7 +29,7 @@ describe('History Buffer Query', function () {
         expect(hb.query(0, 1, 1)).toEqual([]);
     });
 
-    it('should return proper series after the buffer has slided', function () {
+    it('should return proper series after the buffer has slid', function () {
         var hb = new HistoryBuffer(10);
 
         hb.appendArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
@@ -81,8 +81,8 @@ describe('History Buffer Query', function () {
         expect(hb.query(0, 32768, 64).length).toBeGreaterThan(511);
         expect(indexesAreInAscendingOrder(res)).toBe(true);
 
-        expect(hb.tree.levels[1].nodes.get(0).min).toBe(0);
-        expect(hb.tree.levels[1].nodes.get(0).max).toBe(1023);
+        expect(hb.tree.tree.levels[1].nodes.get(0).min).toBe(0);
+        expect(hb.tree.tree.levels[1].nodes.get(0).max).toBe(1023);
     });
 
     it('should make sure that the acceleration structure is up to date after slide', function () {
@@ -97,8 +97,8 @@ describe('History Buffer Query', function () {
         expect(hb.query(32768, 65536, 64).length).toBeGreaterThan(511);
         expect(indexesAreInAscendingOrder(res)).toBe(true);
 
-        expect(hb.tree.levels[1].nodes.get(0).min).toBe(32768);
-        expect(hb.tree.levels[1].nodes.get(0).max).toBe(33791);
+        expect(hb.tree.tree.levels[1].nodes.get(0).min).toBe(32768);
+        expect(hb.tree.tree.levels[1].nodes.get(0).max).toBe(33791);
     });
 
     it('should use the acceleration structure to answer the queries', function () {
@@ -110,14 +110,15 @@ describe('History Buffer Query', function () {
         }
 
         hb.query(0, 1, 1); // make sure the acceleration tree is up to date
-        expect(hb.tree.levels[0].nodes.get(0).min).toBe(0);
-        expect(hb.tree.levels[0].nodes.get(0).max).toBe(31);
+        var firstTree = hb.trees[0].tree;
+        expect(firstTree.levels[0].nodes.get(0).min).toBe(0);
+        expect(firstTree.levels[0].nodes.get(0).max).toBe(31);
 
         // tamper with the acceleration tree
-        hb.tree.levels[0].nodes.get(0).min = -7;
-        hb.tree.levels[0].nodes.get(0).minIndex = 77;
-        hb.tree.levels[0].nodes.get(0).max = 99;
-        hb.tree.levels[0].nodes.get(0).maxIndex = 99;
+        firstTree.levels[0].nodes.get(0).min = -7;
+        firstTree.levels[0].nodes.get(0).minIndex = 77;
+        firstTree.levels[0].nodes.get(0).max = 99;
+        firstTree.levels[0].nodes.get(0).maxIndex = 99;
 
         // make sure the rigged data is present in the query results
         var res = hb.query(0, 32768, 32);
@@ -177,12 +178,13 @@ describe('History Buffer Query', function () {
             var hb = new HistoryBuffer(128);
             hb.push(1);
 
-            hb.updateAccelerationTree();
+            hb.updateAccelerationTrees();
+            var firstTree = hb.trees[0].tree;
 
-            expect(hb.tree.levels[0].nodes.get(0).min).toBe(1);
-            expect(hb.tree.levels[0].nodes.get(0).minIndex).toBe(0);
-            expect(hb.tree.levels[0].nodes.get(0).max).toBe(1);
-            expect(hb.tree.levels[0].nodes.get(0).maxIndex).toBe(0);
+            expect(firstTree.levels[0].nodes.get(0).min).toBe(1);
+            expect(firstTree.levels[0].nodes.get(0).minIndex).toBe(0);
+            expect(firstTree.levels[0].nodes.get(0).max).toBe(1);
+            expect(firstTree.levels[0].nodes.get(0).maxIndex).toBe(0);
         });
 
         it('should recompute the minmax for a one level tree on fill', function () {
@@ -191,16 +193,17 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTree();
+            hb.updateAccelerationTrees();
+            var firstTree = hb.trees[0].tree;
 
-            expect(hb.tree.levels[0].nodes.get(0).min).toBe(0);
-            expect(hb.tree.levels[0].nodes.get(0).minIndex).toBe(0);
-            expect(hb.tree.levels[0].nodes.get(0).max).toBe(31);
-            expect(hb.tree.levels[0].nodes.get(0).maxIndex).toBe(31);
-            expect(hb.tree.levels[0].nodes.get(1).min).toBe(32);
-            expect(hb.tree.levels[0].nodes.get(1).minIndex).toBe(32);
-            expect(hb.tree.levels[0].nodes.get(1).max).toBe(63);
-            expect(hb.tree.levels[0].nodes.get(1).maxIndex).toBe(63);
+            expect(firstTree.levels[0].nodes.get(0).min).toBe(0);
+            expect(firstTree.levels[0].nodes.get(0).minIndex).toBe(0);
+            expect(firstTree.levels[0].nodes.get(0).max).toBe(31);
+            expect(firstTree.levels[0].nodes.get(0).maxIndex).toBe(31);
+            expect(firstTree.levels[0].nodes.get(1).min).toBe(32);
+            expect(firstTree.levels[0].nodes.get(1).minIndex).toBe(32);
+            expect(firstTree.levels[0].nodes.get(1).max).toBe(63);
+            expect(firstTree.levels[0].nodes.get(1).maxIndex).toBe(63);
         });
 
         it('should compute the minmax for a one level tree on one element overwrite', function () {
@@ -209,20 +212,21 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTree();
+            hb.updateAccelerationTrees();
+            var firstTree = hb.trees[0].tree;
 
-            expect(hb.tree.levels[0].nodes.get(0).min).toBe(1);
-            expect(hb.tree.levels[0].nodes.get(0).minIndex).toBe(1);
-            expect(hb.tree.levels[0].nodes.get(0).max).toBe(31);
-            expect(hb.tree.levels[0].nodes.get(0).maxIndex).toBe(31);
-            expect(hb.tree.levels[0].nodes.get(1).min).toBe(32);
-            expect(hb.tree.levels[0].nodes.get(1).minIndex).toBe(32);
-            expect(hb.tree.levels[0].nodes.get(1).max).toBe(63);
-            expect(hb.tree.levels[0].nodes.get(1).maxIndex).toBe(63);
-            expect(hb.tree.levels[0].nodes.get(2).min).toBe(64);
-            expect(hb.tree.levels[0].nodes.get(2).minIndex).toBe(64);
-            expect(hb.tree.levels[0].nodes.get(2).max).toBe(64);
-            expect(hb.tree.levels[0].nodes.get(2).maxIndex).toBe(64);
+            expect(firstTree.levels[0].nodes.get(0).min).toBe(1);
+            expect(firstTree.levels[0].nodes.get(0).minIndex).toBe(1);
+            expect(firstTree.levels[0].nodes.get(0).max).toBe(31);
+            expect(firstTree.levels[0].nodes.get(0).maxIndex).toBe(31);
+            expect(firstTree.levels[0].nodes.get(1).min).toBe(32);
+            expect(firstTree.levels[0].nodes.get(1).minIndex).toBe(32);
+            expect(firstTree.levels[0].nodes.get(1).max).toBe(63);
+            expect(firstTree.levels[0].nodes.get(1).maxIndex).toBe(63);
+            expect(firstTree.levels[0].nodes.get(2).min).toBe(64);
+            expect(firstTree.levels[0].nodes.get(2).minIndex).toBe(64);
+            expect(firstTree.levels[0].nodes.get(2).max).toBe(64);
+            expect(firstTree.levels[0].nodes.get(2).maxIndex).toBe(64);
         });
 
         it('should compute the minmax for a one level tree on multiple elements overwrite', function () {
@@ -231,16 +235,17 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTree();
+            hb.updateAccelerationTrees();
+            var firstTree = hb.trees[0].tree;
 
-            expect(hb.tree.levels[0].nodes.get(0).min).toBe(32);
-            expect(hb.tree.levels[0].nodes.get(0).minIndex).toBe(32);
-            expect(hb.tree.levels[0].nodes.get(0).max).toBe(63);
-            expect(hb.tree.levels[0].nodes.get(0).maxIndex).toBe(63);
-            expect(hb.tree.levels[0].nodes.get(1).min).toBe(64);
-            expect(hb.tree.levels[0].nodes.get(1).minIndex).toBe(64);
-            expect(hb.tree.levels[0].nodes.get(1).max).toBe(95);
-            expect(hb.tree.levels[0].nodes.get(1).maxIndex).toBe(95);
+            expect(firstTree.levels[0].nodes.get(0).min).toBe(32);
+            expect(firstTree.levels[0].nodes.get(0).minIndex).toBe(32);
+            expect(firstTree.levels[0].nodes.get(0).max).toBe(63);
+            expect(firstTree.levels[0].nodes.get(0).maxIndex).toBe(63);
+            expect(firstTree.levels[0].nodes.get(1).min).toBe(64);
+            expect(firstTree.levels[0].nodes.get(1).minIndex).toBe(64);
+            expect(firstTree.levels[0].nodes.get(1).max).toBe(95);
+            expect(firstTree.levels[0].nodes.get(1).maxIndex).toBe(95);
         });
 
         it('should recompute the minmax for a two level tree', function () {
@@ -250,14 +255,15 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTree();
+            hb.updateAccelerationTrees();
+            var firstTree = hb.trees[0].tree;
 
-            expect(hb.tree.levels.length).toEqual(2);
-            expect(hb.tree.levels[1].nodes.size).toBe(3);
-            expect(hb.tree.levels[1].nodes.get(0).min).toBe(0);
-            expect(hb.tree.levels[1].nodes.get(0).max).toBe(1023);
-            expect(hb.tree.levels[1].nodes.get(1).min).toBe(1024);
-            expect(hb.tree.levels[1].nodes.get(1).max).toBe(2047);
+            expect(firstTree.levels.length).toEqual(2);
+            expect(firstTree.levels[1].nodes.size).toBe(3);
+            expect(firstTree.levels[1].nodes.get(0).min).toBe(0);
+            expect(firstTree.levels[1].nodes.get(0).max).toBe(1023);
+            expect(firstTree.levels[1].nodes.get(1).min).toBe(1024);
+            expect(firstTree.levels[1].nodes.get(1).max).toBe(2047);
         });
 
         it('should recompute the minmax for a one level tree on the left side of the tree on slide', function () {
@@ -266,20 +272,21 @@ describe('History Buffer Query', function () {
             for (var i = 0; i < 64; i++) {
                 hb.push(i);
             }
-            hb.updateAccelerationTree();
+            hb.updateAccelerationTrees();
 
             for (var j = 0; j < 2; j++) {
                 hb.push(64 + j);
             }
 
-            hb.updateAccelerationTree();
+            hb.updateAccelerationTrees();
+            var firstTree = hb.trees[0].tree;
 
-            expect(hb.tree.levels[0].nodes.get(0).min).toBe(2);
-            expect(hb.tree.levels[0].nodes.get(0).max).toBe(31);
-            expect(hb.tree.levels[0].nodes.get(1).min).toBe(32);
-            expect(hb.tree.levels[0].nodes.get(1).max).toBe(63);
-            expect(hb.tree.levels[0].nodes.get(2).min).toBe(64);
-            expect(hb.tree.levels[0].nodes.get(2).max).toBe(65);
+            expect(firstTree.levels[0].nodes.get(0).min).toBe(2);
+            expect(firstTree.levels[0].nodes.get(0).max).toBe(31);
+            expect(firstTree.levels[0].nodes.get(1).min).toBe(32);
+            expect(firstTree.levels[0].nodes.get(1).max).toBe(63);
+            expect(firstTree.levels[0].nodes.get(2).min).toBe(64);
+            expect(firstTree.levels[0].nodes.get(2).max).toBe(65);
         });
 
         it('should recompute the minmax for a two level tree on the left side of the tree on slide', function () {
@@ -289,20 +296,21 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTree();
+            hb.updateAccelerationTrees();
 
             for (var j = 0; j < 2; j++) {
                 hb.push(2 * 32 * 32 + j);
             }
 
-            hb.updateAccelerationTree();
+            hb.updateAccelerationTrees();
+            var firstTree = hb.trees[0].tree;
 
-            expect(hb.tree.levels[1].nodes.get(0).min).toBe(2);
-            expect(hb.tree.levels[1].nodes.get(0).max).toBe(1023);
-            expect(hb.tree.levels[1].nodes.get(1).min).toBe(1024);
-            expect(hb.tree.levels[1].nodes.get(1).max).toBe(2047);
-            expect(hb.tree.levels[1].nodes.get(2).min).toBe(2048);
-            expect(hb.tree.levels[1].nodes.get(2).max).toBe(2049);
+            expect(firstTree.levels[1].nodes.get(0).min).toBe(2);
+            expect(firstTree.levels[1].nodes.get(0).max).toBe(1023);
+            expect(firstTree.levels[1].nodes.get(1).min).toBe(1024);
+            expect(firstTree.levels[1].nodes.get(1).max).toBe(2047);
+            expect(firstTree.levels[1].nodes.get(2).min).toBe(2048);
+            expect(firstTree.levels[1].nodes.get(2).max).toBe(2049);
         });
     });
 

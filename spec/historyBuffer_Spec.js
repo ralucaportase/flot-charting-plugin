@@ -73,21 +73,55 @@ describe('History Buffer', function () {
             expect(hb.tree).toEqual(jasmine.any(Object));
         });
 
+        it('should have multiple acceleration trees for muliple data series', function () {
+            var hb = new HistoryBuffer(128, 2);
+
+            expect(hb.trees[0]).toEqual(jasmine.any(Object));
+            expect(hb.trees[0]).toEqual(jasmine.any(Object));
+        });
+
+
         describe('One level deep', function () {
             it('should compute the max and min correctly for tree elements', function () {
                 var hb = new HistoryBuffer(10);
 
                 hb.appendArray([1, 2, 3]);
 
-                hb.updateAccelerationTree();
+                hb.updateAccelerationTrees();
 
-                expect(hb.tree.depth).toEqual(1);
-                expect(hb.tree.levels).toEqual(jasmine.any(Array));
-                expect(hb.tree.levels.length).toEqual(1);
-                expect(hb.tree.levels[0].nodes.size).toBe(2);
-                expect(hb.tree.levels[0].nodes.get(0).min).toBe(1);
-                expect(hb.tree.levels[0].nodes.get(0).max).toBe(3);
+                var firstTree = hb.trees[0].tree;
+
+                expect(firstTree.depth).toEqual(1);
+                expect(firstTree.levels).toEqual(jasmine.any(Array));
+                expect(firstTree.levels.length).toEqual(1);
+                expect(firstTree.levels[0].nodes.size).toBe(2);
+                expect(firstTree.levels[0].nodes.get(0).min).toBe(1);
+                expect(firstTree.levels[0].nodes.get(0).max).toBe(3);
             });
+
+            it('should compute the max and min correctly for tree elements, two data series', function () {
+                var hb = new HistoryBuffer(10, 2);
+
+                hb.appendArray([[1, 10], [2, 20], [3, 30]]);
+
+                hb.updateAccelerationTrees();
+                var firstTree = hb.trees[0].tree;
+                var secondTree = hb.trees[1].tree;
+
+                expect(firstTree.depth).toEqual(1);
+                expect(secondTree.depth).toEqual(1);
+                expect(firstTree.levels).toEqual(jasmine.any(Array));
+                expect(secondTree.levels).toEqual(jasmine.any(Array));
+                expect(firstTree.levels.length).toEqual(1);
+                expect(secondTree.levels.length).toEqual(1);
+                expect(firstTree.levels[0].nodes.size).toBe(2);
+                expect(secondTree.levels[0].nodes.size).toBe(2);
+                expect(firstTree.levels[0].nodes.get(0).min).toBe(1);
+                expect(secondTree.levels[0].nodes.get(0).min).toBe(10);
+                expect(firstTree.levels[0].nodes.get(0).max).toBe(3);
+                expect(secondTree.levels[0].nodes.get(0).max).toBe(30);
+            });
+
 
             it('should compute the max and min correctly for 64 elements', function () {
                 var hb = new HistoryBuffer(128);
@@ -96,16 +130,17 @@ describe('History Buffer', function () {
                     hb.push(i);
                 }
 
-                hb.updateAccelerationTree();
+                hb.updateAccelerationTrees();
+                var firstTree = hb.trees[0].tree;
 
-                expect(hb.tree.depth).toEqual(1);
-                expect(hb.tree.levels).toEqual(jasmine.any(Array));
-                expect(hb.tree.levels.length).toEqual(1);
-                expect(hb.tree.levels[0].nodes.size).toBe(5);
-                expect(hb.tree.levels[0].nodes.get(0).min).toBe(0);
-                expect(hb.tree.levels[0].nodes.get(0).max).toBe(31);
-                expect(hb.tree.levels[0].nodes.get(1).min).toBe(32);
-                expect(hb.tree.levels[0].nodes.get(1).max).toBe(63);
+                expect(firstTree.depth).toEqual(1);
+                expect(firstTree.levels).toEqual(jasmine.any(Array));
+                expect(firstTree.levels.length).toEqual(1);
+                expect(firstTree.levels[0].nodes.size).toBe(5);
+                expect(firstTree.levels[0].nodes.get(0).min).toBe(0);
+                expect(firstTree.levels[0].nodes.get(0).max).toBe(31);
+                expect(firstTree.levels[0].nodes.get(1).min).toBe(32);
+                expect(firstTree.levels[0].nodes.get(1).max).toBe(63);
             });
         });
 
@@ -113,7 +148,7 @@ describe('History Buffer', function () {
             it('should create a proper acceleration tree with two levels', function () {
                 var hb = new HistoryBuffer(32 * 32 * 2);
 
-                expect(hb.tree.depth).toEqual(2);
+                expect(hb.tree.tree.depth).toEqual(2);
             });
 
             it('should compute the max and min correctly for 2048 elements', function () {
@@ -123,15 +158,16 @@ describe('History Buffer', function () {
                     hb.push(i);
                 }
 
-                hb.updateAccelerationTree();
+                hb.updateAccelerationTrees();
+                var firstTree = hb.trees[0].tree;
 
-                expect(hb.tree.levels).toEqual(jasmine.any(Array));
-                expect(hb.tree.levels.length).toEqual(2);
-                expect(hb.tree.levels[1].nodes.size).toBe(3);
-                expect(hb.tree.levels[1].nodes.get(0).min).toBe(0);
-                expect(hb.tree.levels[1].nodes.get(0).max).toBe(1023);
-                expect(hb.tree.levels[1].nodes.get(1).min).toBe(1024);
-                expect(hb.tree.levels[1].nodes.get(1).max).toBe(2047);
+                expect(firstTree.levels).toEqual(jasmine.any(Array));
+                expect(firstTree.levels.length).toEqual(2);
+                expect(firstTree.levels[1].nodes.size).toBe(3);
+                expect(firstTree.levels[1].nodes.get(0).min).toBe(0);
+                expect(firstTree.levels[1].nodes.get(0).max).toBe(1023);
+                expect(firstTree.levels[1].nodes.get(1).min).toBe(1024);
+                expect(firstTree.levels[1].nodes.get(1).max).toBe(2047);
             });
         });
 
@@ -139,7 +175,7 @@ describe('History Buffer', function () {
             it('should create a proper acceleration tree with three levels', function () {
                 var hb = new HistoryBuffer(32 * 32 * 32 * 2);
 
-                expect(hb.tree.depth).toEqual(3);
+                expect(hb.tree.tree.depth).toEqual(3);
             });
 
             it('should compute the max and min correctly for 65536 elements', function () {
@@ -149,15 +185,16 @@ describe('History Buffer', function () {
                     hb.push(i);
                 }
 
-                hb.updateAccelerationTree();
+                hb.updateAccelerationTrees();
+                var firstTree = hb.trees[0].tree;
 
-                expect(hb.tree.levels).toEqual(jasmine.any(Array));
-                expect(hb.tree.levels.length).toEqual(3);
-                expect(hb.tree.levels[2].nodes.length).toBe(3);
-                expect(hb.tree.levels[2].nodes.get(0).min).toBe(0);
-                expect(hb.tree.levels[2].nodes.get(0).max).toBe(32767);
-                expect(hb.tree.levels[2].nodes.get(1).min).toBe(32768);
-                expect(hb.tree.levels[2].nodes.get(1).max).toBe(65535);
+                expect(firstTree.levels).toEqual(jasmine.any(Array));
+                expect(firstTree.levels.length).toEqual(3);
+                expect(firstTree.levels[2].nodes.length).toBe(3);
+                expect(firstTree.levels[2].nodes.get(0).min).toBe(0);
+                expect(firstTree.levels[2].nodes.get(0).max).toBe(32767);
+                expect(firstTree.levels[2].nodes.get(1).min).toBe(32768);
+                expect(firstTree.levels[2].nodes.get(1).max).toBe(65535);
             });
         });
     });
