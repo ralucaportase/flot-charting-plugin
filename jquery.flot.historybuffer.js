@@ -250,6 +250,8 @@ Licensed under the MIT license.
      */
     Tree.prototype.populateTreeLevel = function (startingFrom, level) {
         var hb = this.historyBuffer;
+        var cbuffer = this.cbuffer;
+        var startIndex = hb.startIndex(); // cache it
         var currentCount = 0;
         var i = 0;
         var firstSample = true;
@@ -273,7 +275,7 @@ Licensed under the MIT license.
 
         for (i = startingFrom; i < hb.lastIndex(); i += baseLevel.step) {
             if (level === 0) {
-                var val = this.get(i);
+                var val = cbuffer.get(i - startIndex); //this.get(i);
 
                 if (firstSample) {
                     max = val;
@@ -428,20 +430,22 @@ Licensed under the MIT license.
 
     Tree.prototype.readMinMax = function (start, end) {
         var intervalSize = end - start;
+        var startIndex = this.historyBuffer.startIndex();
+        var cbuffer = this.cbuffer;
 
         var i;
         var minmax = {
             minIndex: start,
-            min: this.get(start),
+            min: cbuffer.get(start - startIndex),
             maxIndex: start,
-            max: this.get(start)
+            max: cbuffer.get(start - startIndex)
         };
 
         var level = Math.floor(Math.log(intervalSize) / Math.log(branchFactor));
 
         if (level === 0) {
             for (i = start; i < end; i++) {
-                updateMinMaxFromValue(i, this.get(i), minmax);
+                updateMinMaxFromValue(i, cbuffer.get(i - startIndex), minmax);
             }
 
             return minmax;
@@ -494,6 +498,8 @@ Licensed under the MIT license.
     Tree.prototype.query = function (start, end, step) {
         var i;
         var hb = this.historyBuffer;
+        var cbuffer = this.cbuffer;
+        var startIndex = hb.startIndex(); // cache it
 
         var data = [];
 

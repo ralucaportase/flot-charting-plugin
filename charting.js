@@ -26,8 +26,10 @@ $(function () {
         series: {
             historyBuffer: buffer,
             lines: {
-                show: true
-            }
+                show: true,
+                //lineWidth: 1
+            },
+            shadowSize: 0
         },
         legend: {
             show: false
