@@ -80,7 +80,6 @@ describe('History Buffer', function () {
             expect(hb.trees[0]).toEqual(jasmine.any(Object));
         });
 
-
         describe('One level deep', function () {
             it('should compute the max and min correctly for tree elements', function () {
                 var hb = new HistoryBuffer(10);
@@ -98,6 +97,7 @@ describe('History Buffer', function () {
                 expect(firstTree.levels[0].nodes.get(0).min).toBe(1);
                 expect(firstTree.levels[0].nodes.get(0).max).toBe(3);
             });
+
 
             it('should compute the max and min correctly for tree elements, two data series', function () {
                 var hb = new HistoryBuffer(10, 2);
@@ -151,6 +151,13 @@ describe('History Buffer', function () {
                 expect(hb.tree.tree.depth).toEqual(2);
             });
 
+            it('should create proper acceleration trees with two levels on multiple data series', function () {
+                var hb = new HistoryBuffer(32 * 32 * 2, 2);
+
+                expect(hb.tree.tree.depth).toEqual(2);
+                expect(hb.trees[1].tree.depth).toEqual(2);
+            });
+
             it('should compute the max and min correctly for 2048 elements', function () {
                 var hb = new HistoryBuffer(32 * 32 * 2);
 
@@ -176,6 +183,13 @@ describe('History Buffer', function () {
                 var hb = new HistoryBuffer(32 * 32 * 32 * 2);
 
                 expect(hb.tree.tree.depth).toEqual(3);
+            });
+
+            it('should create proper acceleration trees with three levels on multiple data series', function () {
+                var hb = new HistoryBuffer(32 * 32 * 32 * 2, 3);
+
+                expect(hb.tree.tree.depth).toEqual(3);
+                expect(hb.trees[1].tree.depth).toEqual(3);
             });
 
             it('should compute the max and min correctly for 65536 elements', function () {

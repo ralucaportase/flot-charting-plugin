@@ -20,6 +20,14 @@ describe('History Buffer Query', function () {
         expect(hb.query(0, 1, 1)).toEqual([[0, 5]]);
     });
 
+    it('should have basic query capabilities for buffers with multiple data series', function () {
+        var hb = new HistoryBuffer(10, 2);
+
+        hb.push([5, 6]);
+
+        expect(hb.query(0, 1, 1)).toEqual([[[0, 5]], [[0, 6]]]);
+    });
+
     it('should return empty series when querying outside of the bounds', function () {
         var hb = new HistoryBuffer(10);
 

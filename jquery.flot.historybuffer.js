@@ -250,7 +250,6 @@ Licensed under the MIT license.
      */
     Tree.prototype.populateTreeLevel = function (startingFrom, level) {
         var hb = this.historyBuffer;
-        var cbuffer = this.cbuffer;
         var currentCount = 0;
         var i = 0;
         var firstSample = true;
@@ -341,7 +340,6 @@ Licensed under the MIT license.
     /* Rotate the history buffer to the left, updating the leftmost nodes in the tree with the new mins and maxes*/
     Tree.prototype.rotateTreeLevel = function (level) {
         var hb = this.historyBuffer;
-        var cbuffer = this.cbuffer;
 
         var startingIndex = hb.startIndex();
         var treeLevel = this.tree.levels[level];
@@ -430,7 +428,6 @@ Licensed under the MIT license.
 
     Tree.prototype.readMinMax = function (start, end) {
         var intervalSize = end - start;
-        var cbuffer = this.cbuffer;
 
         var i;
         var minmax = {
@@ -482,6 +479,14 @@ Licensed under the MIT license.
 
         if (this.width === 1) {
             return this.tree.query(start, end, step);
+        } else {
+            var res = [];
+
+            this.trees.forEach(function (tree) {
+                res.push(tree.query(start, end, step));
+            });
+
+            return res;
         }
     };
 
@@ -489,7 +494,6 @@ Licensed under the MIT license.
     Tree.prototype.query = function (start, end, step) {
         var i;
         var hb = this.historyBuffer;
-        var cbuffer = this.cbuffer;
 
         var data = [];
 
