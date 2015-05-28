@@ -158,12 +158,13 @@ describe('History Buffer Query', function () {
     });
 
     it('should give the same answer when using the queries vs toSeries with step 10', function () {
-        var hbSize = 100;
+        var hbSize = 200;
         var hb;
         var step = 10;
 
         var property = jsc.forall(shrinkableLongArrayGenerator(jsc.number()), function (array) {
             hb = new HistoryBuffer(hbSize);
+            hb.setBranchingFactor(4);
 
             for (var i = 0; i < array.length; i++) {
                 hb.push(array[i]);
@@ -179,6 +180,26 @@ describe('History Buffer Query', function () {
             size: 2 * hbSize,
             tests: 200
         });
+        hb.setBranchingFactor(32);
+    });
+
+    it('should give the same answer when using the queries vs toSeries with step 10', function () {
+        var hbSize = 200;
+        var hb;
+        var step = 10;
+        var arr = [-221.85291510634124, -246.04653050377965, -151.78832260798663, 144.27369455527514, 144.56944866478443, 90.68919277377427, 53.512750804424286, -135.86282426398247, -141.51867881510407, -97.66538087837398, -253.53739414270967, -187.60230323765427, 247.81563513725996, 137.88111602514982, 163.35517396777868, -241.80482274480164, 117.128308176063, 248.53530455566943, 235.3106337301433, -186.18678852450103, 63.65153900440782, -223.634405516088, -52.78648662753403, 123.22961756587029, -180.77537014055997, -179.4641258250922, -116.3951157303527, -71.3419539174065, -74.3008337393403, 104.36698244791478];
+
+
+        hb = new HistoryBuffer(hbSize);
+        hb.setBranchingFactor(4);
+
+        hb.appendArray(arr);
+
+        var decimatedRes = decimateRawData(hb, step);
+        var query = hb.query(0, hb.count, step);
+
+        expect(JSON.stringify(decimatedRes)).toEqual(JSON.stringify(query));
+        hb.setBranchingFactor(32);
     });
 
     describe('Acceleration tree update', function () {
