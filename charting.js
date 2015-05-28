@@ -4,7 +4,7 @@
 $(function () {
     'use strict';
     var plot;
-    var buffer = new HistoryBuffer(200 * 1024, 3);
+    var buffer = new HistoryBuffer(100 * 1024, 3);
     var globalIndex = 0;
     var chartStep = 0.0001;
 
