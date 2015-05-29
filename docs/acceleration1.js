@@ -38,7 +38,7 @@ $(function () {
     setInterval(updateData, 500);
 
     function levelToD3(buffer, depth, start, end) {
-        var accTree = buffer.tree;
+        var accTree = buffer.tree.tree;
         if (depth < 0) {
             var childs = [];
 
@@ -66,7 +66,7 @@ $(function () {
 
         var nodes = [];
         while (start < end) {
-            var node = buffer.getTreeNode(depth, start);
+            var node = buffer.tree.getTreeNode(depth, start);
 
             if (node) {
                 nodes.push({
@@ -81,7 +81,7 @@ $(function () {
     }
 
     function accTree2d3(buffer) {
-        var accTree = buffer.tree;
+        var accTree = buffer.tree.tree;
         var depth = accTree.depth;
         var level = accTree.levels[depth - 1];
 
