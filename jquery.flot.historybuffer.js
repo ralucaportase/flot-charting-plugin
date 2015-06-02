@@ -252,6 +252,7 @@ Licensed under the MIT license.
         var hb = this.historyBuffer;
         var cbuffer = this.cbuffer;
         var startIndex = hb.startIndex(); // cache it
+        var lastIndex = hb.lastIndex(); // cache it
         var currentCount = 0;
         var i = 0;
         var firstSample = true;
@@ -259,7 +260,7 @@ Licensed under the MIT license.
 
         var minusOneLevel = {
             step: 1,
-            startIndex: hb.startIndex()
+            startIndex: startIndex
         };
 
         var baseLevel = (level === 0) ? minusOneLevel : this.tree.levels[level - 1];
@@ -273,7 +274,7 @@ Licensed under the MIT license.
             currentCount = (startingFrom / baseLevel.step) % branchFactor;
         }
 
-        for (i = startingFrom; i < hb.lastIndex(); i += baseLevel.step) {
+        for (i = startingFrom; i < lastIndex; i += baseLevel.step) {
             if (level === 0) {
                 var val = cbuffer.get(i - startIndex); //this.get(i);
 
@@ -459,11 +460,7 @@ Licensed under the MIT license.
             minmax = this.readMinMax(start, truncatedStart);
         }
 
-        if (end !== truncatedEnd) {
-            updateMinMaxFromNode(this.readMinMax(truncatedEnd, end), minmax);
-        }
-
-        var truncatedBufferStart = floorInBase(this.historyBuffer.startIndex(), step);
+        var truncatedBufferStart = floorInBase(startIndex, step);
         var begin = (truncatedStart - truncatedBufferStart) / step;
         var finish = (truncatedEnd - truncatedBufferStart) / step;
 
@@ -471,6 +468,9 @@ Licensed under the MIT license.
             updateMinMaxFromNode(this.tree.levels[level - 1].nodes.get(i), minmax);
         }
 
+        if (end !== truncatedEnd) {
+            updateMinMaxFromNode(this.readMinMax(truncatedEnd, end), minmax);
+        }
         return minmax;
     };
 
