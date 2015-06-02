@@ -475,23 +475,16 @@ Licensed under the MIT license.
     };
 
     /* get a decimated series, starting at the start sample, ending at the end sample with a provided step */
-    HistoryBuffer.prototype.query = function (start, end, step) {
+    HistoryBuffer.prototype.query = function (start, end, step, index) {
+        if (index === undefined) {
+            index = 0;
+        }
+
         if (this.changed) {
             this.updateAccelerationTrees();
             this.changed = false;
         }
-
-        if (this.width === 1) {
-            return this.tree.query(start, end, step);
-        } else {
-            var res = [];
-
-            this.trees.forEach(function (tree) {
-                res.push(tree.query(start, end, step));
-            });
-
-            return res;
-        }
+        return this.trees[index].query(start, end, step);
     };
 
     /* get a decimated series, starting at the start sample, ending at the end sample with a provided step */

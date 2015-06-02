@@ -22,8 +22,8 @@ Licensed under the MIT license.
                 step = Math.floor(size / 500);
             }
 
-            //series.data = series.historyBuffer.toSeries(plot.getData().indexOf(series));
-            series.data = series.historyBuffer.trees[plot.getData().indexOf(series)].query(hb.startIndex(), hb.lastIndex(), step);
+            var index = plot.getData().indexOf(series);
+            series.data = series.historyBuffer.query(hb.startIndex(), hb.lastIndex(), step, index);
         }
     }
 
