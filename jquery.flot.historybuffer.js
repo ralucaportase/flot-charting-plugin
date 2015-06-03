@@ -19,6 +19,8 @@ Licensed under the MIT license.
         this.init();
     };
 
+    var rmmcount = 0; // todo remove me
+
     var Tree = function (hb, cbuffer) {
         this.historyBuffer = hb;
         this.cbuffer = cbuffer;
@@ -429,18 +431,13 @@ Licensed under the MIT license.
         this.callOnChange = f;
     };
 
-    Tree.prototype.readMinMax = function (start, end) {
+    Tree.prototype.readMinMax = function (start, end, minmax) {
+        rmmcount++;
         var intervalSize = end - start;
         var startIndex = this.historyBuffer.startIndex();
         var cbuffer = this.cbuffer;
 
         var i;
-        var minmax = {
-            minIndex: start,
-            min: cbuffer.get(start - startIndex),
-            maxIndex: start,
-            max: cbuffer.get(start - startIndex)
-        };
 
         var level = Math.floor(Math.log(intervalSize) / Math.log(branchFactor));
 
@@ -457,7 +454,7 @@ Licensed under the MIT license.
         var truncatedEnd = floorInBase(end, step);
 
         if (start !== truncatedStart) {
-            minmax = this.readMinMax(start, truncatedStart);
+            this.readMinMax(start, truncatedStart, minmax);
         }
 
         var truncatedBufferStart = floorInBase(startIndex, step);
@@ -469,8 +466,9 @@ Licensed under the MIT license.
         }
 
         if (end !== truncatedEnd) {
-            updateMinMaxFromNode(this.readMinMax(truncatedEnd, end), minmax);
+            this.readMinMax(truncatedEnd, end, minmax);
         }
+
         return minmax;
     };
 
@@ -491,8 +489,6 @@ Licensed under the MIT license.
     Tree.prototype.query = function (start, end, step) {
         var i;
         var hb = this.historyBuffer;
-        var cbuffer = this.cbuffer;
-        var startIndex = hb.startIndex(); // cache it
 
         var data = [];
 
@@ -520,11 +516,17 @@ Licensed under the MIT license.
                 data.push([i, this.get(i)]);
             }
         } else {
-            var minmax;
+            var minmax = new TreeNode();
+
             var maxIndex, minIndex;
             for (i = start; i < end; i += step) {
                 var partialQueryEnd = Math.min(end, i + step);
-                minmax = this.readMinMax(i, partialQueryEnd);
+                minmax.max = Number.NEGATIVE_INFINITY;
+                minmax.min = Number.POSITIVE_INFINITY;
+                minmax.minIndex = 0;
+                minmax.maxIndex = 0;
+
+                minmax = this.readMinMax(i, partialQueryEnd, minmax);
                 maxIndex = minmax.maxIndex;
                 minIndex = minmax.minIndex;
                 if (minIndex === maxIndex) {
