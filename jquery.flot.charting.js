@@ -9,6 +9,7 @@ Licensed under the MIT license.
 (function ($) {
     'use strict';
 
+    // flot hook which decimates the data from the historyBuffer and converts it into a format that flot understands
     function processRawData(plot, series) {
         if (series.historyBuffer) {
             var hb = series.historyBuffer;
@@ -27,39 +28,43 @@ Licensed under the MIT license.
         }
     }
 
-    function cleanupData(plot, hb) {
+    // remove old series data and compute a new one from the history buffer
+    function updateSeries(plot, hb) {
         var series = [];
         for (var i = 0; i < hb.width; i++) {
             series.push([]);
         }
+
         plot.setData(series);
     }
 
+    // draw the chart
+    function drawChart(plot) {
+        plot.setupGrid();
+        plot.draw();
+    }
+
+    // called on every history buffer change. 
     function triggerDataUpdate(plot, hb) {
         if (!plot.dataUpdateTriggered) {
-            plot.dataUpdateTriggered = requestAnimationFrame(function () {
-                performDataUpdate(plot, hb);
+            plot.dataUpdateTriggered = requestAnimationFrame(function () { // trottle charting computation/drawing to the browser frame rate
+                updateSeries(plot, hb);
+                drawChart(plot);
                 plot.dataUpdateTriggered = null;
             });
         }
     }
 
-    function performDataUpdate(plot, hb) {
-        cleanupData(plot, hb);
-        plot.setupGrid();
-        plot.draw();
-    }
-
+    // plugin entry point
     function init(plot) {
         plot.hooks.processOptions.push(function (plot) {
-            var hb = plot.getOptions().series.historyBuffer;
-
+            var hb = plot.getOptions().series.historyBuffer; // looks for the historyBuffer option
             if (hb) {
-                plot.hooks.processRawData.push(processRawData);
+                plot.hooks.processRawData.push(processRawData); // enable charting plugin for this flot chart
                 hb.onChange(function () {
-                    triggerDataUpdate(plot, hb);
+                    triggerDataUpdate(plot, hb); // call triggerDataUpdate on every historyBuffer modification
                 });
-                cleanupData(plot, hb);
+                updateSeries(plot, hb);
             }
         });
     }
@@ -67,6 +72,6 @@ Licensed under the MIT license.
     $.plot.plugins.push({
         init: init,
         name: 'charting',
-        version: '0.2'
+        version: '0.3'
     });
 })(jQuery);

@@ -10,8 +10,8 @@ $(function () {
     var root;
     var radial = false;
 
-    HistoryBuffer.prototype.setBranchingFactor(4);
     var buffer = new HistoryBuffer(32, 1);
+    buffer.setBranchingFactor(4);
 
     $.plot('#placeholder', [], {
         series: {

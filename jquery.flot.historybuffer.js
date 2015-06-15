@@ -11,7 +11,7 @@ Licensed under the MIT license.
     /* The branching factor determines how many samples are decimated in a tree node.
      * It affects the performance and the overhead of the tree.
      */
-    var branchFactor = 32; // 32 for now. TODO tune the branching factor.
+    var defaultBranchFactor = 32; // 32 for now. TODO tune the branching factor.
     //var accelerationTreeActivationSize = 1024; // the size at which the acceleration tree starts to provide improvements. TO DO.
 
     /* a TreeNode object keeps information about min and max values in the subtree below it*/
@@ -19,8 +19,7 @@ Licensed under the MIT license.
         this.init();
     };
 
-    var rmmcount = 0; // todo remove me
-
+    /* a Tree holds the data used for accelerated query of the history buffer*/
     var Tree = function (hb, cbuffer) {
         this.historyBuffer = hb;
         this.cbuffer = cbuffer;
@@ -37,8 +36,8 @@ Licensed under the MIT license.
     /* a tree level is a heap of tree nodes at a certain depth in the tree*/
     var TreeLevel = function (historyBuffer, level) {
         this.level = level;
-        this.step = Math.pow(branchFactor, level);
-        this.capacity = Math.ceil(historyBuffer.capacity / (Math.pow(branchFactor, level))) + 1;
+        this.step = Math.pow(historyBuffer.branchFactor, level);
+        this.capacity = Math.ceil(historyBuffer.capacity / (Math.pow(historyBuffer.branchFactor, level))) + 1;
         this.startIndex = 0;
         this.nodes = new CBuffer(this.capacity);
     };
@@ -58,6 +57,7 @@ Licensed under the MIT license.
         this.width = width || 1;
         this.lastUpdatedIndex = 0;
         this.firstUpdatedIndex = 0;
+        this.branchFactor = defaultBranchFactor;
 
         this.buffers = []; // circular buffers for data
         this.trees = []; // acceleration trees
@@ -76,7 +76,24 @@ Licensed under the MIT license.
     };
 
     HistoryBuffer.prototype.setBranchingFactor = function (b) {
-        branchFactor = b;
+        this.branchFactor = b;
+
+        this.rebuildAccelerationTrees();
+    };
+
+    HistoryBuffer.prototype.rebuildAccelerationTrees = function () {
+        this.trees = []; // new acceleration trees
+
+        for (var i = 0; i < this.width; i++) {
+            this.trees.push(new Tree(this, this.buffers[i]));
+        }
+
+        this.tree = this.trees[0];
+
+        this.firstUpdatedIndex = this.startIndex();
+        this.lastUpdatedIndex = this.firstUpdatedIndex;
+
+        this.updateAccelerationTrees();
     };
 
     /* change the capacity of the History Buffer and clean all the data inside it */
@@ -84,17 +101,14 @@ Licensed under the MIT license.
         if (newCapacity !== this.capacity) {
             this.capacity = newCapacity;
             this.buffers = []; // circular buffers for data
-            this.trees = []; // acceleration trees
 
             for (var i = 0; i < this.width; i++) {
                 this.buffers.push(new CBuffer(newCapacity));
-                this.trees.push(new Tree(this, this.buffers[i]));
             }
 
             this.buffer = this.buffers[0];
-            this.tree = this.trees[0];
-
             this.count = 0; // todo fire changes and upate lastindex, startindex
+            this.rebuildAccelerationTrees();
         }
     };
 
@@ -153,7 +167,6 @@ Licensed under the MIT license.
         index -= this.historyBuffer.startIndex();
         return this.cbuffer.get(index);
     };
-
 
     /* append an array of elements to the buffer*/
     HistoryBuffer.prototype.appendArray = function (arr) {
@@ -224,7 +237,7 @@ Licensed under the MIT license.
     /* builds an empty acceleration tree*/
     Tree.prototype.buildEmptyAccelerationTree = function () {
         var hb = this.historyBuffer;
-        var depth = Math.ceil(Math.log(hb.capacity) / Math.log(branchFactor)) - 1;
+        var depth = Math.ceil(Math.log(hb.capacity) / Math.log(hb.branchFactor)) - 1;
         if (depth < 1) {
             depth = 1;
         }
@@ -273,7 +286,7 @@ Licensed under the MIT license.
 
         if (baseLevel.startIndex > startingFrom) {
             startingFrom = baseLevel.startIndex;
-            currentCount = (startingFrom / baseLevel.step) % branchFactor;
+            currentCount = (startingFrom / baseLevel.step) % hb.branchFactor;
         }
 
         for (i = startingFrom; i < lastIndex; i += baseLevel.step) {
@@ -320,7 +333,7 @@ Licensed under the MIT license.
 
             currentCount++;
 
-            if (currentCount === branchFactor) {
+            if (currentCount === hb.branchFactor) {
                 currentCount = 0;
                 firstSample = true;
                 node = this.getTreeNode(level, i);
@@ -368,11 +381,11 @@ Licensed under the MIT license.
             var firstNode = treeLevel.nodes.get(0);
 
             if (level === 0) {
-                for (i = startingIndex; i < (alignedStartIndex + branchFactor); i++) {
+                for (i = startingIndex; i < (alignedStartIndex + hb.branchFactor); i++) {
                     updateMinMaxFromValue(i, this.get(i), minmax);
                 }
             } else {
-                for (i = startingIndex; i < (alignedStartIndex + treeLevel.step); i += treeLevel.step / branchFactor) {
+                for (i = startingIndex; i < (alignedStartIndex + treeLevel.step); i += treeLevel.step / hb.branchFactor) {
                     updateMinMaxFromNode(this.getTreeNode(level - 1, i), minmax);
                 }
             }
@@ -405,8 +418,8 @@ Licensed under the MIT license.
             tree.updateAccelerationTree();
         });
 
-        this.lastUpdatedIndex = this.startIndex() + buffer.size;
         this.firstUpdatedIndex = this.startIndex();
+        this.lastUpdatedIndex = this.firstUpdatedIndex + buffer.size;
     };
 
     HistoryBuffer.prototype.toSeries = function (index) {
@@ -432,14 +445,14 @@ Licensed under the MIT license.
     };
 
     Tree.prototype.readMinMax = function (start, end, minmax) {
-        rmmcount++;
         var intervalSize = end - start;
-        var startIndex = this.historyBuffer.startIndex();
+        var hb = this.historyBuffer;
+        var startIndex = hb.startIndex();
         var cbuffer = this.cbuffer;
 
         var i;
 
-        var level = Math.floor(Math.log(intervalSize) / Math.log(branchFactor));
+        var level = Math.floor(Math.log(intervalSize) / Math.log(hb.branchFactor));
 
         if (level === 0) {
             for (i = start; i < end; i++) {
@@ -449,7 +462,7 @@ Licensed under the MIT license.
             return minmax;
         }
 
-        var step = Math.pow(branchFactor, level);
+        var step = Math.pow(hb.branchFactor, level);
         var truncatedStart = Math.ceil(start / step) * step;
         var truncatedEnd = floorInBase(end, step);
 
