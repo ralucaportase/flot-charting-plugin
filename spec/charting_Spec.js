@@ -13,7 +13,6 @@ describe('Flot charting: ', function () {
 
         var fixture = setFixtures('<div class="demo-container">').find('.demo-container').get(0);
         placeholder = $('<div id="placeholder" class="demo-placeholder">');
-
         placeholder.appendTo(fixture);
     });
 
