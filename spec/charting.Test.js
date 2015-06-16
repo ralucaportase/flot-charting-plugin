@@ -11,8 +11,8 @@ describe('Flot charting: ', function () {
     beforeEach(function () {
         jasmine.clock().install();
 
-        var fixture = setFixtures('<div class="demo-container">').find('.demo-container').get(0);
-        placeholder = $('<div id="placeholder" class="demo-placeholder">');
+        var fixture = setFixtures('<div style="width: 800px;height: 600px">').find('.demo-container').get(0);
+        placeholder = $('<div id="placeholder" style="width: 100%;height: 100%">');
         placeholder.appendTo(fixture);
     });
 
