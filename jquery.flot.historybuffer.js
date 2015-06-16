@@ -109,6 +109,30 @@ Licensed under the MIT license.
             this.buffer = this.buffers[0];
             this.count = 0; // todo fire changes and upate lastindex, startindex
             this.rebuildAccelerationTrees();
+            this.changed = true;
+            if (this.callOnChange) {
+                this.callOnChange();
+            }
+        }
+    };
+
+    /* change the width of the History Buffer and clean all the data inside it */
+    HistoryBuffer.prototype.setWidth = function (newWidth) {
+        if (newWidth !== this.width) {
+            this.width = newWidth;
+            this.buffers = []; // clear the circular buffers for data. TODO reuse the buffers
+
+            for (var i = 0; i < this.width; i++) {
+                this.buffers.push(new CBuffer(this.capacity));
+            }
+
+            this.buffer = this.buffers[0];
+            this.count = 0; // todo fire changes and upate lastindex, startindex
+            this.rebuildAccelerationTrees();
+            this.changed = true;
+            if (this.callOnChange) {
+                this.callOnChange();
+            }
         }
     };
 
@@ -134,6 +158,7 @@ Licensed under the MIT license.
         if (this.callOnChange) {
             this.callOnChange();
         }
+
     };
 
     /* the index of the oldest element in the buffer*/

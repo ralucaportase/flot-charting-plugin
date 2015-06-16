@@ -77,7 +77,6 @@ describe('History Buffer Query', function () {
         expect(indexesAreInAscendingOrder(res)).toBe(true);
     });
 
-
     it('should make sure that the acceleration structure is up to date', function () {
         var size = 32768;
         var hb = new HistoryBuffer(size);

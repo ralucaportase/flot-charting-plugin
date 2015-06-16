@@ -19,6 +19,35 @@ describe('History Buffer', function () {
         expect(hb.capacity).toBe(20);
     });
 
+    it('setCapacity method should clear the data', function () {
+        var hb = new HistoryBuffer(10);
+        hb.appendArray([1, 2, 3]);
+
+        hb.setCapacity(20);
+        expect(hb.count).toBe(0);
+    });
+
+    it('should have a width property', function () {
+        var hb = new HistoryBuffer(10, 3);
+
+        expect(hb.width).toBe(3);
+    });
+
+    it('should have a setWidth method', function () {
+        var hb = new HistoryBuffer(10, 1);
+
+        hb.setWidth(2);
+        expect(hb.width).toBe(2);
+    });
+
+    it('setWidth method should clear the data', function () {
+        var hb = new HistoryBuffer(10, 1);
+        hb.appendArray([1, 2, 3]);
+
+        hb.setWidth(2);
+        expect(hb.count).toBe(0);
+    });
+
     it('should have an appendArray method', function () {
         var hb = new HistoryBuffer(10);
 
@@ -65,6 +94,55 @@ describe('History Buffer', function () {
         expect(hb.toArray()).toEqual([[1, 2], [2, 3], [3, 4]]);
     });
 
+    describe('onChange notifications', function () {
+        it('should have an onChange method', function () {
+            var hb = new HistoryBuffer(10, 1);
+
+            expect(hb.onChange).toEqual(jasmine.any(Function));
+        });
+
+        it('onChange should be called on push', function () {
+            var hb = new HistoryBuffer(10);
+
+            var spy = jasmine.createSpy('onChange');
+
+            hb.onChange(spy);
+            hb.push(1);
+            expect(spy).toHaveBeenCalled();
+        });
+
+        it('onChange should be called on appendArray', function () {
+            var hb = new HistoryBuffer(10);
+            var spy = jasmine.createSpy('onChange');
+
+            hb.onChange(spy);
+            hb.appendArray([1, 2]);
+
+            expect(spy).toHaveBeenCalled();
+        });
+
+        it('onChange should be called on setCapacity', function () {
+            var hb = new HistoryBuffer(10);
+            var spy = jasmine.createSpy('onChange');
+            hb.appendArray([1, 2]);
+
+            hb.onChange(spy);
+            hb.setCapacity(20);
+
+            expect(spy).toHaveBeenCalled();
+        });
+
+        it('onChange should be called on setWidth', function () {
+            var hb = new HistoryBuffer(10);
+            var spy = jasmine.createSpy('onChange');
+            hb.appendArray([1, 2]);
+
+            hb.onChange(spy);
+            hb.setWidth(2);
+
+            expect(spy).toHaveBeenCalled();
+        });
+    });
 
     describe('Acceleration tree', function () {
         it('should be created on hb creation', function () {
