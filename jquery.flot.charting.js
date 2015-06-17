@@ -47,7 +47,7 @@ Licensed under the MIT license.
     // called on every history buffer change. 
     function triggerDataUpdate(plot, hb) {
         if (!plot.dataUpdateTriggered) {
-            plot.dataUpdateTriggered = requestAnimationFrame(function () { // trottle charting computation/drawing to the browser frame rate
+            plot.dataUpdateTriggered = requestAnimationFrame(function () { // throttle charting computation/drawing to the browser frame rate
                 updateSeries(plot, hb);
                 drawChart(plot);
                 plot.dataUpdateTriggered = null;
