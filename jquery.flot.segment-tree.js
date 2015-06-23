@@ -17,7 +17,7 @@ Licensed under the MIT license.
     var SegmentTree = function (hb, cbuffer) {
         this.historyBuffer = hb;
         this.cbuffer = cbuffer;
-        this.tree = this.buildEmptyAccelerationTree();
+        this.tree = this.buildEmptySegmentTree();
     };
 
     SegmentTreeNode.prototype.init = function () {
@@ -67,7 +67,7 @@ Licensed under the MIT license.
     };
 
     /* builds an empty acceleration tree*/
-    SegmentTree.prototype.buildEmptyAccelerationTree = function () {
+    SegmentTree.prototype.buildEmptySegmentTree = function () {
         var hb = this.historyBuffer;
         var depth = Math.ceil(Math.log(hb.capacity) / Math.log(hb.branchFactor)) - 1;
         if (depth < 1) {
@@ -229,7 +229,7 @@ Licensed under the MIT license.
         }
     };
 
-    SegmentTree.prototype.updateAccelerationTree = function () {
+    SegmentTree.prototype.updateSegmentTree = function () {
         var level;
 
         for (level = 0; level < this.tree.depth; level++) {

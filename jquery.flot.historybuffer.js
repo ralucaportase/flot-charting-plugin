@@ -41,10 +41,10 @@ Licensed under the MIT license.
     HistoryBuffer.prototype.setBranchingFactor = function (b) {
         this.branchFactor = b;
 
-        this.rebuildAccelerationTrees();
+        this.rebuildSegmentTrees();
     };
 
-    HistoryBuffer.prototype.rebuildAccelerationTrees = function () {
+    HistoryBuffer.prototype.rebuildSegmentTrees = function () {
         this.trees = []; // new segment trees
 
         for (var i = 0; i < this.width; i++) {
@@ -56,7 +56,7 @@ Licensed under the MIT license.
         this.firstUpdatedIndex = this.startIndex();
         this.lastUpdatedIndex = this.firstUpdatedIndex;
 
-        this.updateAccelerationTrees();
+        this.updateSegmentTrees();
     };
 
     /* change the capacity of the History Buffer and clean all the data inside it */
@@ -71,7 +71,7 @@ Licensed under the MIT license.
 
             this.buffer = this.buffers[0];
             this.count = 0; // todo fire changes and upate lastindex, startindex
-            this.rebuildAccelerationTrees();
+            this.rebuildSegmentTrees();
             this.changed = true;
             if (this.callOnChange) {
                 this.callOnChange();
@@ -91,7 +91,7 @@ Licensed under the MIT license.
 
             this.buffer = this.buffers[0];
             this.count = 0; // todo fire changes and upate lastindex, startindex
-            this.rebuildAccelerationTrees();
+            this.rebuildSegmentTrees();
             this.changed = true;
             if (this.callOnChange) {
                 this.callOnChange();
@@ -202,11 +202,11 @@ Licensed under the MIT license.
     };
 
     /* update the segment tree with the newly added values*/
-    HistoryBuffer.prototype.updateAccelerationTrees = function () {
+    HistoryBuffer.prototype.updateSegmentTrees = function () {
         var buffer = this.buffer;
 
         this.trees.forEach(function (tree) {
-            tree.updateAccelerationTree();
+            tree.updateSegmentTree();
         });
 
         this.firstUpdatedIndex = this.startIndex();
@@ -243,7 +243,7 @@ Licensed under the MIT license.
         }
 
         if (this.changed) {
-            this.updateAccelerationTrees();
+            this.updateSegmentTrees();
             this.changed = false;
         }
         return this.trees[index].query(start, end, step);

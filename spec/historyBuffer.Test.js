@@ -1,4 +1,4 @@
-/* global describe, it, xit, expect, jasmine, HistoryBuffer */
+/* global describe, it, expect, jasmine, HistoryBuffer */
 /* jshint browser: true*/
 
 /* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js* */
@@ -58,12 +58,12 @@ describe('History Buffer', function () {
         });
     });
 
-    xit('appendArray method should work with arrays bigger that the hb capacity', function () {
+    it('appendArray method should work with arrays bigger that the hb capacity', function () {
         var hb = new HistoryBuffer(3);
 
         hb.appendArray([1, 2, 3, 4]);
 
-        [2, 3, 4, undefined].forEach(function (exp, i) {
+        [2, 3, 4].forEach(function (exp, i) {
             expect(hb.get(i + 1)).toBe(exp);
         });
     });
@@ -144,7 +144,7 @@ describe('History Buffer', function () {
         });
     });
 
-    describe('Acceleration tree', function () {
+    describe('Segment tree', function () {
         it('should be created on hb creation', function () {
             var hb = new HistoryBuffer(128);
 
@@ -164,7 +164,7 @@ describe('History Buffer', function () {
 
                 hb.appendArray([1, 2, 3]);
 
-                hb.updateAccelerationTrees();
+                hb.updateSegmentTrees();
 
                 var firstTree = hb.trees[0].tree;
 
@@ -182,7 +182,7 @@ describe('History Buffer', function () {
 
                 hb.appendArray([[1, 10], [2, 20], [3, 30]]);
 
-                hb.updateAccelerationTrees();
+                hb.updateSegmentTrees();
                 var firstTree = hb.trees[0].tree;
                 var secondTree = hb.trees[1].tree;
 
@@ -208,7 +208,7 @@ describe('History Buffer', function () {
                     hb.push(i);
                 }
 
-                hb.updateAccelerationTrees();
+                hb.updateSegmentTrees();
                 var firstTree = hb.trees[0].tree;
 
                 expect(firstTree.depth).toEqual(1);
@@ -243,7 +243,7 @@ describe('History Buffer', function () {
                     hb.push(i);
                 }
 
-                hb.updateAccelerationTrees();
+                hb.updateSegmentTrees();
                 var firstTree = hb.trees[0].tree;
 
                 expect(firstTree.levels).toEqual(jasmine.any(Array));
@@ -277,7 +277,7 @@ describe('History Buffer', function () {
                     hb.push(i);
                 }
 
-                hb.updateAccelerationTrees();
+                hb.updateSegmentTrees();
                 var firstTree = hb.trees[0].tree;
 
                 expect(firstTree.levels).toEqual(jasmine.any(Array));

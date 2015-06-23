@@ -199,12 +199,12 @@ describe('History Buffer Query', function () {
         expect(JSON.stringify(decimatedRes)).toEqual(JSON.stringify(query));
     });
 
-    describe('Acceleration tree update', function () {
+    describe('Segment tree update', function () {
         it('should recompute the minmax for a one level tree on push', function () {
             var hb = new HistoryBuffer(128);
             hb.push(1);
 
-            hb.updateAccelerationTrees();
+            hb.updateSegmentTrees();
             var firstTree = hb.trees[0].tree;
 
             expect(firstTree.levels[0].nodes.get(0).min).toBe(1);
@@ -219,7 +219,7 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTrees();
+            hb.updateSegmentTrees();
             var firstTree = hb.trees[0].tree;
 
             expect(firstTree.levels[0].nodes.get(0).min).toBe(0);
@@ -238,7 +238,7 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTrees();
+            hb.updateSegmentTrees();
             var firstTree = hb.trees[0].tree;
 
             expect(firstTree.levels[0].nodes.get(0).min).toBe(1);
@@ -261,7 +261,7 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTrees();
+            hb.updateSegmentTrees();
             var firstTree = hb.trees[0].tree;
 
             expect(firstTree.levels[0].nodes.get(0).min).toBe(32);
@@ -281,7 +281,7 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTrees();
+            hb.updateSegmentTrees();
             var firstTree = hb.trees[0].tree;
 
             expect(firstTree.levels.length).toEqual(2);
@@ -298,13 +298,13 @@ describe('History Buffer Query', function () {
             for (var i = 0; i < 64; i++) {
                 hb.push(i);
             }
-            hb.updateAccelerationTrees();
+            hb.updateSegmentTrees();
 
             for (var j = 0; j < 2; j++) {
                 hb.push(64 + j);
             }
 
-            hb.updateAccelerationTrees();
+            hb.updateSegmentTrees();
             var firstTree = hb.trees[0].tree;
 
             expect(firstTree.levels[0].nodes.get(0).min).toBe(2);
@@ -322,13 +322,13 @@ describe('History Buffer Query', function () {
                 hb.push(i);
             }
 
-            hb.updateAccelerationTrees();
+            hb.updateSegmentTrees();
 
             for (var j = 0; j < 2; j++) {
                 hb.push(2 * 32 * 32 + j);
             }
 
-            hb.updateAccelerationTrees();
+            hb.updateSegmentTrees();
             var firstTree = hb.trees[0].tree;
 
             expect(firstTree.levels[1].nodes.get(0).min).toBe(2);
