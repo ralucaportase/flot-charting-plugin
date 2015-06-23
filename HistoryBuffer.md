@@ -15,11 +15,8 @@ There are many ways to select the samples in the data; one of the best ones is t
 each bucket select the maximum and minimum as subsamples. This method results in a drawing that looks very similar with the one in which all samples are drawn.
 
 
-The history buffer is a circular buffer holding the chart data accompanied by an acceleration structure - a tree of min/max values; an acceleration tree.
-The purpose of the 
-
-The acceleration tree makes sense and is enabled only for big data buffers.
-
+The history buffer is a circular buffer holding the chart data accompanied by an acceleration structure - a segment tree of min/max values.
+The segment tree is enabled only for big data buffers.
 
 Operations accelerated by a historyBuffer
 -----------------------------------------
@@ -31,4 +28,3 @@ The common charting operations performed on a history buffer are
 * deleting m elements at the tail
 * compute min/max on a range
 * query for a "visually interesting" data subsample on a range
-
