@@ -309,7 +309,7 @@ Licensed under the MIT license.
             end = lastIndex;
         }
 
-        if (step < 4) {
+        if (step < 4) { // for small steps it is more efficient to bypass the segment tree. TODO: benchmark this
             for (i = start; i < end; i++) {
                 data.push([i, this.get(i)]);
             }

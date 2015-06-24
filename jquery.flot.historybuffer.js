@@ -12,7 +12,6 @@ Licensed under the MIT license.
      * It affects the performance and the overhead of the tree.
      */
     var defaultBranchFactor = 32; // 32 for now. TODO tune the branching factor.
-    //var accelerationTreeActivationSize = 1024; // the size at which the acceleration tree starts to provide improvements. TO DO.
 
     /* Chart History buffer */
     var HistoryBuffer = function (capacity, width) {
@@ -221,11 +220,7 @@ Licensed under the MIT license.
         var start = this.startIndex();
 
         for (var i = 0; i < buffer.size; i++) {
-            if (this.width > 1) {
-                data.push([i + start, this.buffers[index].get(i)]);
-            } else {
-                data.push([i + start, buffer.get(i)]);
-            }
+            data.push([i + start, this.buffers[index || 0].get(i)]);
         }
 
         return data;
