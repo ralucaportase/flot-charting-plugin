@@ -6,6 +6,10 @@
 describe('A History Buffer', function () {
     'use strict';
 
+    var oneLevelTreeLength = HistoryBuffer.prototype.getDefaultBranchingFactor();
+    var twoLevelsTreeLength = oneLevelTreeLength * HistoryBuffer.prototype.getDefaultBranchingFactor();
+    var threeLevelsTreeLength = twoLevelsTreeLength * HistoryBuffer.prototype.getDefaultBranchingFactor();
+
     it('has a capacity property', function () {
         var hb = new HistoryBuffer(10);
 
@@ -185,6 +189,7 @@ describe('A History Buffer', function () {
                 var firstTree = hb.trees[0].tree;
                 var secondTree = hb.trees[1].tree;
 
+                // compare against some precalculated values
                 expect(firstTree.depth).toEqual(1);
                 expect(secondTree.depth).toEqual(1);
                 expect(firstTree.levels).toEqual(jasmine.any(Array));
@@ -200,7 +205,7 @@ describe('A History Buffer', function () {
             });
 
             it('computes the max and min correctly for 64 elements', function () {
-                var hb = new HistoryBuffer(128);
+                var hb = new HistoryBuffer(64 * 2); //half full history buffer
 
                 for (var i = 0; i < 64; i++) {
                     hb.push(i);
@@ -209,6 +214,7 @@ describe('A History Buffer', function () {
                 hb.updateSegmentTrees();
                 var firstTree = hb.trees[0].tree;
 
+                // compare against some precalculated values
                 expect(firstTree.depth).toEqual(1);
                 expect(firstTree.levels).toEqual(jasmine.any(Array));
                 expect(firstTree.levels.length).toEqual(1);
@@ -222,28 +228,29 @@ describe('A History Buffer', function () {
 
         describe('Two levels deep', function () {
             it('has a proper segment tree with two levels', function () {
-                var hb = new HistoryBuffer(32 * 32 * 2);
+                var hb = new HistoryBuffer(twoLevelsTreeLength * 2);
 
                 expect(hb.tree.tree.depth).toEqual(2);
             });
 
             it('has a proper segment trees with two levels on multiple data series', function () {
-                var hb = new HistoryBuffer(32 * 32 * 2, 2);
+                var hb = new HistoryBuffer(twoLevelsTreeLength * 2, 2);
 
                 expect(hb.tree.tree.depth).toEqual(2);
                 expect(hb.trees[1].tree.depth).toEqual(2);
             });
 
-            it('computes the max and min correctly for 2048 elements', function () {
-                var hb = new HistoryBuffer(32 * 32 * 2);
+            it('computes the max and min correctly for two levels deep trees', function () {
+                var hb = new HistoryBuffer(twoLevelsTreeLength * 2);
 
-                for (var i = 0; i < 2 * 32 * 32; i++) {
+                for (var i = 0; i < twoLevelsTreeLength * 2; i++) {
                     hb.push(i);
                 }
 
                 hb.updateSegmentTrees();
                 var firstTree = hb.trees[0].tree;
 
+                // compare against some precalculated values
                 expect(firstTree.levels).toEqual(jasmine.any(Array));
                 expect(firstTree.levels.length).toEqual(2);
                 expect(firstTree.levels[1].nodes.size).toBe(3);
@@ -256,28 +263,29 @@ describe('A History Buffer', function () {
 
         describe('Three levels deep', function () {
             it('has a proper segment tree with three levels', function () {
-                var hb = new HistoryBuffer(32 * 32 * 32 * 2);
+                var hb = new HistoryBuffer(threeLevelsTreeLength * 2);
 
                 expect(hb.tree.tree.depth).toEqual(3);
             });
 
             it('has a proper segment trees with three levels on multiple data series', function () {
-                var hb = new HistoryBuffer(32 * 32 * 32 * 2, 3);
+                var hb = new HistoryBuffer(threeLevelsTreeLength * 2, 3);
 
                 expect(hb.tree.tree.depth).toEqual(3);
                 expect(hb.trees[1].tree.depth).toEqual(3);
             });
 
             it('computes the max and min correctly for 65536 elements', function () {
-                var hb = new HistoryBuffer(32 * 32 * 32 * 2);
+                var hb = new HistoryBuffer(threeLevelsTreeLength * 2);
 
-                for (var i = 0; i < 2 * 32 * 32 * 32; i++) {
+                for (var i = 0; i < threeLevelsTreeLength * 2; i++) {
                     hb.push(i);
                 }
 
                 hb.updateSegmentTrees();
                 var firstTree = hb.trees[0].tree;
 
+                // compare against some precalculated values
                 expect(firstTree.levels).toEqual(jasmine.any(Array));
                 expect(firstTree.levels.length).toEqual(3);
                 expect(firstTree.levels[2].nodes.length).toBe(3);

@@ -43,6 +43,10 @@ Licensed under the MIT license.
         this.rebuildSegmentTrees();
     };
 
+    HistoryBuffer.prototype.getDefaultBranchingFactor = function () {
+        return defaultBranchFactor;
+    };
+
     HistoryBuffer.prototype.rebuildSegmentTrees = function () {
         this.trees = []; // new segment trees
 
