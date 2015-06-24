@@ -123,7 +123,7 @@ Licensed under the MIT license.
 
         for (i = startingFrom; i < lastIndex; i += baseLevel.step) {
             if (level === 0) {
-                var val = cbuffer.get(i - startIndex); //this.get(i);
+                var val = cbuffer.get(i - startIndex);
 
                 if (firstSample) {
                     max = val;

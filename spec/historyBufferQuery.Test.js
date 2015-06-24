@@ -319,10 +319,10 @@ describe('A History Buffer', function () {
     }
 
     /*makes sure that we get the query results in order*/
-    function indexesAreInAscendingOrder(serie) {
+    function indexesAreInAscendingOrder(dataSeries) {
         var res = true;
-        for (var i = 1; i < serie.length; i++) {
-            if (serie[i - 1][0] >= serie[i][0]) {
+        for (var i = 1; i < dataSeries.length; i++) {
+            if (dataSeries[i - 1][0] >= dataSeries[i][0]) {
                 res = false;
             }
         }
