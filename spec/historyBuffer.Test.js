@@ -3,23 +3,23 @@
 
 /* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js* */
 
-describe('History Buffer', function () {
+describe('A History Buffer', function () {
     'use strict';
 
-    it('should have a capacity property', function () {
+    it('has a capacity property', function () {
         var hb = new HistoryBuffer(10);
 
         expect(hb.capacity).toBe(10);
     });
 
-    it('should have a setCapacity method', function () {
+    it('has a setCapacity method', function () {
         var hb = new HistoryBuffer(10);
 
         hb.setCapacity(20);
         expect(hb.capacity).toBe(20);
     });
 
-    it('setCapacity method should clear the data', function () {
+    it('setCapacity method clears the data', function () {
         var hb = new HistoryBuffer(10);
         hb.appendArray([1, 2, 3]);
 
@@ -27,20 +27,20 @@ describe('History Buffer', function () {
         expect(hb.count).toBe(0);
     });
 
-    it('should have a width property', function () {
+    it('has a width property', function () {
         var hb = new HistoryBuffer(10, 3);
 
         expect(hb.width).toBe(3);
     });
 
-    it('should have a setWidth method', function () {
+    it('has a setWidth method', function () {
         var hb = new HistoryBuffer(10, 1);
 
         hb.setWidth(2);
         expect(hb.width).toBe(2);
     });
 
-    it('setWidth method should clear the data', function () {
+    it('setWidth method clears the data', function () {
         var hb = new HistoryBuffer(10, 1);
         hb.appendArray([1, 2, 3]);
 
@@ -48,7 +48,7 @@ describe('History Buffer', function () {
         expect(hb.count).toBe(0);
     });
 
-    it('should have an appendArray method', function () {
+    it('has an appendArray method', function () {
         var hb = new HistoryBuffer(10);
 
         hb.appendArray([1, 2, 3]);
@@ -58,7 +58,7 @@ describe('History Buffer', function () {
         });
     });
 
-    it('appendArray method should work with arrays bigger that the hb capacity', function () {
+    it('appendArray method works with arrays bigger that the hb capacity', function () {
         var hb = new HistoryBuffer(3);
 
         hb.appendArray([1, 2, 3, 4]);
@@ -68,7 +68,7 @@ describe('History Buffer', function () {
         });
     });
 
-    it('the appendArray method should work for plots with two data series', function () {
+    it('appendArray method works for plots with two data series', function () {
         var hb = new HistoryBuffer(10, 2);
 
         hb.appendArray([[1, 1], [2, 2], [3, 3]]);
@@ -78,7 +78,7 @@ describe('History Buffer', function () {
         });
     });
 
-    it('should have a toArray method', function () {
+    it('has a toArray method', function () {
         var hb = new HistoryBuffer(10);
 
         hb.appendArray([1, 2, 3]);
@@ -86,7 +86,7 @@ describe('History Buffer', function () {
         expect(hb.toArray()).toEqual([1, 2, 3]);
     });
 
-    it('toArray method should work for plots with two data series', function () {
+    it('toArray method works for plots with two data series', function () {
         var hb = new HistoryBuffer(10, 2);
 
         hb.appendArray([[1, 2], [2, 3], [3, 4]]);
@@ -94,14 +94,14 @@ describe('History Buffer', function () {
         expect(hb.toArray()).toEqual([[1, 2], [2, 3], [3, 4]]);
     });
 
-    describe('onChange notifications', function () {
-        it('should have an onChange method', function () {
+    describe('onChange notification', function () {
+        it('has an onChange method', function () {
             var hb = new HistoryBuffer(10, 1);
 
             expect(hb.onChange).toEqual(jasmine.any(Function));
         });
 
-        it('onChange should be called on push', function () {
+        it('onChange is called on push', function () {
             var hb = new HistoryBuffer(10);
 
             var spy = jasmine.createSpy('onChange');
@@ -111,7 +111,7 @@ describe('History Buffer', function () {
             expect(spy).toHaveBeenCalled();
         });
 
-        it('onChange should be called on appendArray', function () {
+        it('onChange is called on appendArray', function () {
             var hb = new HistoryBuffer(10);
             var spy = jasmine.createSpy('onChange');
 
@@ -121,7 +121,7 @@ describe('History Buffer', function () {
             expect(spy).toHaveBeenCalled();
         });
 
-        it('onChange should be called on setCapacity', function () {
+        it('onChange is called on setCapacity', function () {
             var hb = new HistoryBuffer(10);
             var spy = jasmine.createSpy('onChange');
             hb.appendArray([1, 2]);
@@ -132,7 +132,7 @@ describe('History Buffer', function () {
             expect(spy).toHaveBeenCalled();
         });
 
-        it('onChange should be called on setWidth', function () {
+        it('onChange is called on setWidth', function () {
             var hb = new HistoryBuffer(10);
             var spy = jasmine.createSpy('onChange');
             hb.appendArray([1, 2]);
@@ -144,22 +144,22 @@ describe('History Buffer', function () {
         });
     });
 
-    describe('Segment tree', function () {
-        it('should be created on hb creation', function () {
+    describe('A segment tree', function () {
+        it('is created on hb creation', function () {
             var hb = new HistoryBuffer(128);
 
             expect(hb.tree).toEqual(jasmine.any(Object));
         });
 
-        it('should have multiple acceleration trees for muliple data series', function () {
+        it('has multiple segment trees for muliple data series', function () {
             var hb = new HistoryBuffer(128, 2);
 
             expect(hb.trees[0]).toEqual(jasmine.any(Object));
-            expect(hb.trees[0]).toEqual(jasmine.any(Object));
+            expect(hb.trees[1]).toEqual(jasmine.any(Object));
         });
 
         describe('One level deep', function () {
-            it('should compute the max and min correctly for tree elements', function () {
+            it('computes the max and min correctly for tree elements', function () {
                 var hb = new HistoryBuffer(10);
 
                 hb.appendArray([1, 2, 3]);
@@ -176,8 +176,7 @@ describe('History Buffer', function () {
                 expect(firstTree.levels[0].nodes.get(0).max).toBe(3);
             });
 
-
-            it('should compute the max and min correctly for tree elements, two data series', function () {
+            it('computes the max and min correctly for tree elements, two data series', function () {
                 var hb = new HistoryBuffer(10, 2);
 
                 hb.appendArray([[1, 10], [2, 20], [3, 30]]);
@@ -200,8 +199,7 @@ describe('History Buffer', function () {
                 expect(secondTree.levels[0].nodes.get(0).max).toBe(30);
             });
 
-
-            it('should compute the max and min correctly for 64 elements', function () {
+            it('computes the max and min correctly for 64 elements', function () {
                 var hb = new HistoryBuffer(128);
 
                 for (var i = 0; i < 64; i++) {
@@ -223,20 +221,20 @@ describe('History Buffer', function () {
         });
 
         describe('Two levels deep', function () {
-            it('should create a proper acceleration tree with two levels', function () {
+            it('has a proper segment tree with two levels', function () {
                 var hb = new HistoryBuffer(32 * 32 * 2);
 
                 expect(hb.tree.tree.depth).toEqual(2);
             });
 
-            it('should create proper acceleration trees with two levels on multiple data series', function () {
+            it('has a proper segment trees with two levels on multiple data series', function () {
                 var hb = new HistoryBuffer(32 * 32 * 2, 2);
 
                 expect(hb.tree.tree.depth).toEqual(2);
                 expect(hb.trees[1].tree.depth).toEqual(2);
             });
 
-            it('should compute the max and min correctly for 2048 elements', function () {
+            it('computes the max and min correctly for 2048 elements', function () {
                 var hb = new HistoryBuffer(32 * 32 * 2);
 
                 for (var i = 0; i < 2 * 32 * 32; i++) {
@@ -257,20 +255,20 @@ describe('History Buffer', function () {
         });
 
         describe('Three levels deep', function () {
-            it('should create a proper acceleration tree with three levels', function () {
+            it('has a proper segment tree with three levels', function () {
                 var hb = new HistoryBuffer(32 * 32 * 32 * 2);
 
                 expect(hb.tree.tree.depth).toEqual(3);
             });
 
-            it('should create proper acceleration trees with three levels on multiple data series', function () {
+            it('has a proper segment trees with three levels on multiple data series', function () {
                 var hb = new HistoryBuffer(32 * 32 * 32 * 2, 3);
 
                 expect(hb.tree.tree.depth).toEqual(3);
                 expect(hb.trees[1].tree.depth).toEqual(3);
             });
 
-            it('should compute the max and min correctly for 65536 elements', function () {
+            it('computes the max and min correctly for 65536 elements', function () {
                 var hb = new HistoryBuffer(32 * 32 * 32 * 2);
 
                 for (var i = 0; i < 2 * 32 * 32 * 32; i++) {

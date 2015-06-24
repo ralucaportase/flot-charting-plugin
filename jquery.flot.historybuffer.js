@@ -213,7 +213,7 @@ Licensed under the MIT license.
         this.lastUpdatedIndex = this.firstUpdatedIndex + buffer.size;
     };
 
-    HistoryBuffer.prototype.toSeries = function (index) {
+    HistoryBuffer.prototype.toDataSeries = function (index) {
         var buffer = this.buffer;
 
         var data = [];

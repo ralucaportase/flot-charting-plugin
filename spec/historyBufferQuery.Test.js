@@ -1,18 +1,18 @@
-/* global describe, it, expect, jasmine, HistoryBuffer, jsc */
+/* global describe, it, expect, HistoryBuffer */
 /* jshint browser: true*/
 
 /* brackets-xunit: includes=../lib/cbuffer.js,../lib/jsverify.standalone.js,../lib/jasmineHelpers2.js,../jquery.flot.historybuffer.js */
 
-describe('History Buffer Query', function () {
+describe('A History Buffer', function () {
     'use strict';
 
-    it('should have a query method', function () {
+    it('has a query method', function () {
         var hb = new HistoryBuffer(10);
 
         expect(hb.query).toEqual(jasmine.any(Function));
     });
 
-    it('should have basic query capabilities', function () {
+    it('has basic query capabilities', function () {
         var hb = new HistoryBuffer(10);
 
         hb.push(5);
@@ -20,7 +20,7 @@ describe('History Buffer Query', function () {
         expect(hb.query(0, 1, 1)).toEqual([[0, 5]]);
     });
 
-    it('should have basic query capabilities for buffers with multiple data series', function () {
+    it('has basic query capabilities for buffers with multiple data series', function () {
         var hb = new HistoryBuffer(10, 2);
 
         hb.push([5, 6]);
@@ -29,7 +29,7 @@ describe('History Buffer Query', function () {
         expect(hb.query(0, 1, 1, 1)).toEqual([[0, 6]]);
     });
 
-    it('should return empty series when querying outside of the bounds', function () {
+    it('returns empty data series when querying outside of the bounds', function () {
         var hb = new HistoryBuffer(10);
 
         hb.appendArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
@@ -38,7 +38,7 @@ describe('History Buffer Query', function () {
         expect(hb.query(0, 1, 1)).toEqual([]);
     });
 
-    it('should return proper series after the buffer has slid', function () {
+    it('returns proper data series after the buffer has slid', function () {
         var hb = new HistoryBuffer(10);
 
         hb.appendArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
@@ -47,7 +47,7 @@ describe('History Buffer Query', function () {
         expect(hb.query(0, 3, 1)).toEqual([[2, 2]]);
     });
 
-    it('should return a decimated series for big buffers', function () {
+    it('returns a decimated data series for big buffers', function () {
         var size = 32768;
         var hb = new HistoryBuffer(size);
 
@@ -63,7 +63,7 @@ describe('History Buffer Query', function () {
         expect(indexesAreInAscendingOrder(res)).toBe(true);
     });
 
-    it('should return a correctly decimated series for steps not multiple of 32', function () {
+    it('returns a correctly decimated data series for steps not multiple of 32', function () {
         var size = 32768;
         var hb = new HistoryBuffer(size);
 
@@ -77,7 +77,7 @@ describe('History Buffer Query', function () {
         expect(indexesAreInAscendingOrder(res)).toBe(true);
     });
 
-    it('should make sure that the acceleration structure is up to date', function () {
+    it('checks that the acceleration structure is up to date', function () {
         var size = 32768;
         var hb = new HistoryBuffer(size);
 
@@ -93,7 +93,7 @@ describe('History Buffer Query', function () {
         expect(hb.tree.tree.levels[1].nodes.get(0).max).toBe(1023);
     });
 
-    it('should make sure that the acceleration structure is up to date after slide', function () {
+    it('checks that the acceleration structure is up to date after slide', function () {
         var size = 32768;
         var hb = new HistoryBuffer(size);
 
@@ -109,7 +109,7 @@ describe('History Buffer Query', function () {
         expect(hb.tree.tree.levels[1].nodes.get(0).max).toBe(33791);
     });
 
-    it('should use the acceleration structure to answer the queries', function () {
+    it('uses the acceleration structure to answer the queries', function () {
         var size = 32768;
         var hb = new HistoryBuffer(size);
 
@@ -135,54 +135,7 @@ describe('History Buffer Query', function () {
         expect(res[1]).toEqual([99, 99]);
     });
 
-    it('should give the same answer when using the queries vs toSeries with step 1', function () {
-        var hbSize = 100;
-        var hb;
-
-        var property = jsc.forall(shrinkableLongArrayGenerator(jsc.number()), function (array) {
-            hb = new HistoryBuffer(hbSize);
-
-            for (var i = 0; i < array.length; i++) {
-                hb.push(array[i]);
-            }
-
-            var toSeries = hb.toSeries();
-            var query = hb.query(0, hb.count, 1);
-
-            return JSON.stringify(toSeries) === JSON.stringify(query);
-        });
-
-        expect(property).toHold({
-            size: 2 * hbSize
-        });
-    });
-
-    it('should give the same answer when using random data to query and toSeries with step 10', function () {
-        var hbSize = 200;
-        var hb;
-        var step = 10;
-
-        var property = jsc.forall(shrinkableLongArrayGenerator(jsc.number()), function (array) {
-            hb = new HistoryBuffer(hbSize);
-            hb.setBranchingFactor(4);
-
-            for (var i = 0; i < array.length; i++) {
-                hb.push(array[i]);
-            }
-
-            var decimatedRes = decimateRawData(hb, step);
-            var query = hb.query(0, hb.count, step);
-
-            return JSON.stringify(decimatedRes) === JSON.stringify(query);
-        });
-
-        expect(property).toHold({
-            size: 2 * hbSize,
-            tests: 200
-        });
-    });
-
-    it('should give the same answer when using the queries vs toSeries with step 10', function () {
+    it('gives the same answer when using the queries vs toDataSeries with step 10', function () {
         var hbSize = 200;
         var hb;
         var step = 10;
@@ -200,7 +153,7 @@ describe('History Buffer Query', function () {
     });
 
     describe('Segment tree update', function () {
-        it('should recompute the minmax for a one level tree on push', function () {
+        it('recomputes the minmax for a one level tree on push', function () {
             var hb = new HistoryBuffer(128);
             hb.push(1);
 
@@ -213,7 +166,7 @@ describe('History Buffer Query', function () {
             expect(firstTree.levels[0].nodes.get(0).maxIndex).toBe(0);
         });
 
-        it('should recompute the minmax for a one level tree on fill', function () {
+        it('recomputes the minmax for a one level tree on fill', function () {
             var hb = new HistoryBuffer(64);
             for (var i = 0; i < 64; i++) {
                 hb.push(i);
@@ -232,7 +185,7 @@ describe('History Buffer Query', function () {
             expect(firstTree.levels[0].nodes.get(1).maxIndex).toBe(63);
         });
 
-        it('should compute the minmax for a one level tree on one element overwrite', function () {
+        it('computes the minmax for a one level tree on one element overwrite', function () {
             var hb = new HistoryBuffer(64);
             for (var i = 0; i < 65; i++) {
                 hb.push(i);
@@ -255,7 +208,7 @@ describe('History Buffer Query', function () {
             expect(firstTree.levels[0].nodes.get(2).maxIndex).toBe(64);
         });
 
-        it('should compute the minmax for a one level tree on multiple elements overwrite', function () {
+        it('computes the minmax for a one level tree on multiple elements overwrite', function () {
             var hb = new HistoryBuffer(64);
             for (var i = 0; i < 64 + 32; i++) {
                 hb.push(i);
@@ -274,7 +227,7 @@ describe('History Buffer Query', function () {
             expect(firstTree.levels[0].nodes.get(1).maxIndex).toBe(95);
         });
 
-        it('should recompute the minmax for a two level tree', function () {
+        it('recomputes the minmax for a two level tree', function () {
             var hb = new HistoryBuffer(32 * 32 * 2);
 
             for (var i = 0; i < 2 * 32 * 32; i++) {
@@ -292,12 +245,13 @@ describe('History Buffer Query', function () {
             expect(firstTree.levels[1].nodes.get(1).max).toBe(2047);
         });
 
-        it('should recompute the minmax for a one level tree on the left side of the tree on slide', function () {
+        it('recomputes the minmax for a one level tree on the left side of the tree on slide', function () {
             var hb = new HistoryBuffer(64);
 
             for (var i = 0; i < 64; i++) {
                 hb.push(i);
             }
+
             hb.updateSegmentTrees();
 
             for (var j = 0; j < 2; j++) {
@@ -315,7 +269,7 @@ describe('History Buffer Query', function () {
             expect(firstTree.levels[0].nodes.get(2).max).toBe(65);
         });
 
-        it('should recompute the minmax for a two level tree on the left side of the tree on slide', function () {
+        it('recomputes the minmax for a two level tree on the left side of the tree on slide', function () {
             var hb = new HistoryBuffer(32 * 32 * 2);
 
             for (var i = 0; i < 2 * 32 * 32; i++) {
@@ -340,12 +294,13 @@ describe('History Buffer Query', function () {
         });
     });
 
+    /* simple function that decimates data, we check the query results against this function*/
     function decimateRawData(hb, step) {
-        var toSeries = hb.toSeries();
+        var toDataSeries = hb.toDataSeries();
         var decimatedRes = [];
 
-        for (var i = 0; i < toSeries.length; i += step) {
-            var section = toSeries.slice(i, i + step);
+        for (var i = 0; i < toDataSeries.length; i += step) {
+            var section = toDataSeries.slice(i, i + step);
 
             section.sort(function (a, b) {
                 return a[1] - b[1];
@@ -363,6 +318,7 @@ describe('History Buffer Query', function () {
         return decimatedRes;
     }
 
+    /*makes sure that we get the query results in order*/
     function indexesAreInAscendingOrder(serie) {
         var res = true;
         for (var i = 1; i < serie.length; i++) {
@@ -373,24 +329,4 @@ describe('History Buffer Query', function () {
 
         return res;
     }
-
-    /*custom shrinkable input generator for arb arrays*/
-    var sLongArrayGenerator = function (arb) {
-        return {
-            generator: function (size) {
-                var arrsize = jsc.random(0, size);
-                var arr = new Array(arrsize);
-                for (var i = 0; i < arrsize; i++) {
-                    arr[i] = arb.generator(size);
-                }
-                return arr;
-            },
-            shrink: jsc.array(arb).shrink,
-            show: jsc.array(arb).show
-        };
-    };
-
-    var shrinkableLongArrayGenerator = function (arb) {
-        return jsc.bless(sLongArrayGenerator(arb));
-    };
 });

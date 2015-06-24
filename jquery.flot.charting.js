@@ -10,9 +10,9 @@ Licensed under the MIT license.
     'use strict';
 
     // flot hook which decimates the data from the historyBuffer and converts it into a format that flot understands
-    function processRawData(plot, series) {
-        if (series.historyBuffer) {
-            var hb = series.historyBuffer;
+    function processRawData(plot, dataSeries) {
+        if (dataSeries.historyBuffer) {
+            var hb = dataSeries.historyBuffer;
             var size = hb.buffer.size;
             var width = plot.width();
             var step;
@@ -23,19 +23,19 @@ Licensed under the MIT license.
                 step = Math.floor(size / 500);
             }
 
-            var index = plot.getData().indexOf(series);
-            series.data = series.historyBuffer.query(hb.startIndex(), hb.lastIndex(), step, index);
+            var index = plot.getData().indexOf(dataSeries);
+            dataSeries.data = dataSeries.historyBuffer.query(hb.startIndex(), hb.lastIndex(), step, index);
         }
     }
 
-    // remove old series data and compute a new one from the history buffer
+    // remove old data series and compute a new one from the history buffer
     function updateSeries(plot, hb) {
-        var series = [];
+        var dataSeries = [];
         for (var i = 0; i < hb.width; i++) {
-            series.push([]);
+            dataSeries.push([]);
         }
 
-        plot.setData(series);
+        plot.setData(dataSeries);
     }
 
     // draw the chart
