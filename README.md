@@ -36,7 +36,7 @@ History Buffer
 
 A history buffer is a data structure designed to accelerate common operations needed by charting.
 
-See [HistoryBuffer.md]
+See [HistoryBuffer.md] (HistoryBuffer.md)
 
 Performance considerations
 --------------------------
@@ -49,3 +49,4 @@ The complexity of drawing a chart of width P pixels with a history buffer of len
 Tests
 ------
 
+[Run the tests in your browser] (https://rawgit.com/cipix2000/flot-charting/master/SpecRunner.html)
