@@ -1,4 +1,4 @@
-# flot-charting
+# flot-charting [![Build Status](https://travis-ci.org/cipix2000/flot-charting.svg?branch=master)](https://travis-ci.org/cipix2000/flot-charting)
 
 Flot plugin that makes charting easy and efficient.
 
