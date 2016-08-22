@@ -1,9 +1,11 @@
 # flot-charting [![Build Status](https://travis-ci.org/cipix2000/flot-charting.svg?branch=master)](https://travis-ci.org/cipix2000/flot-charting)
 
-Flot plugin that makes charting easy and efficient.
+A Flot plugin to make charting easy and efficient.
 
-A chart takes one or more streams of data, keeps a number of samples in a buffer called HistoryBuffer and
-draws them as a graph.
+What is a chart
+---------------
+
+A chart takes as input data points at different times, accumulates them into an internal buffer (called a history buffer) of certain size and shows them as as continous graph.
 
 How to use
 ----------
@@ -29,7 +31,7 @@ Then you add data to the history buffer
     buffer.appendArray([1, 2, 3, 4]); // or append an array to the buffer
 ```
 
-A chart redraw is automatically scheduled for the next Animation Frame on push or on appendArray so you don't have to.
+A chart redraw is automatically scheduled in the next Animation Frame on any history buffer change.
 
 History Buffer
 --------------
