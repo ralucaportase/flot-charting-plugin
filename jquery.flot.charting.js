@@ -12,9 +12,9 @@ Licensed under the MIT license.
     function processRawData(plot, dataSeries) {
         var indexMap; // this a "dictionary" from 0 based indexes in the history buffer to target values
         if (dataSeries.historyBuffer) {
-            var hb = dataSeries.historyBuffer;
-            var size = hb.buffer.size;
-            indexMap = hb.indexMap;
+            var historyBuffer = dataSeries.historyBuffer;
+            var size = historyBuffer.buffer.size;
+            indexMap = historyBuffer.indexMap;
             var width = plot.width();
             var step;
 
@@ -25,7 +25,7 @@ Licensed under the MIT license.
             }
 
             var index = plot.getData().indexOf(dataSeries);
-            dataSeries.data = dataSeries.historyBuffer.query(hb.startIndex(), hb.lastIndex(), step, index);
+            dataSeries.data = dataSeries.historyBuffer.query(historyBuffer.startIndex(), historyBuffer.lastIndex(), step, index);
             if (indexMap) {
                 dataSeries.data.forEach(function (sample) {
                     sample[0] = indexMap[sample[0]];
