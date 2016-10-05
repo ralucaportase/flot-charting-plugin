@@ -45,6 +45,15 @@ Licensed under the MIT license.
         this.nodes.push(oldestNode);
     };
 
+    /* reinitialize the nodes in the TreeLevel.*/
+    SegmentTreeLevel.prototype.init = function (startIndex) {
+        this.startIndex = startIndex;
+
+        this.nodes.forEach(function (node) {
+            node.init();
+        });
+    };
+
     /*get the nth element in the buffer*/
     SegmentTree.prototype.get = function (index) {
         index -= this.historyBuffer.startIndex();
@@ -137,6 +146,7 @@ Licensed under the MIT license.
                         max = val;
                         maxIndex = i;
                     }
+
                     if (val < min) {
                         min = val;
                         minIndex = i;
@@ -156,6 +166,7 @@ Licensed under the MIT license.
                         max = cNode.max;
                         maxIndex = cNode.maxIndex;
                     }
+
                     if (cNode.min < min) {
                         min = cNode.min;
                         minIndex = cNode.minIndex;
@@ -196,8 +207,12 @@ Licensed under the MIT license.
 
         var alignedStartIndex = floorInBase(startingIndex, treeLevel.step);
 
-        while (treeLevel.startIndex < alignedStartIndex) {
-            treeLevel.rotate();
+        if (alignedStartIndex - treeLevel.startIndex > hb.capacity) {
+            treeLevel.init(alignedStartIndex);
+        } else {
+            while (treeLevel.startIndex < alignedStartIndex) {
+                treeLevel.rotate();
+            }
         }
 
         /* update the first node in the level */
@@ -347,6 +362,7 @@ Licensed under the MIT license.
             minmax.min = value;
             minmax.minIndex = index;
         }
+
         if (value > minmax.max) {
             minmax.max = value;
             minmax.maxIndex = index;
@@ -358,6 +374,7 @@ Licensed under the MIT license.
             minmax.min = node.min;
             minmax.minIndex = node.minIndex;
         }
+
         if (node.max > minmax.max) {
             minmax.max = node.max;
             minmax.maxIndex = node.maxIndex;

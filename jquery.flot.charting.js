@@ -5,15 +5,16 @@ Licensed under the MIT license.
 */
 /*global jQuery, requestAnimationFrame*/
 
-
 (function ($) {
     'use strict';
 
     // flot hook which decimates the data from the historyBuffer and converts it into a format that flot understands
     function processRawData(plot, dataSeries) {
+        var indexMap; // this a "dictionary" from 0 based indexes in the history buffer to target values
         if (dataSeries.historyBuffer) {
             var hb = dataSeries.historyBuffer;
             var size = hb.buffer.size;
+            indexMap = hb.indexMap;
             var width = plot.width();
             var step;
 
@@ -25,14 +26,23 @@ Licensed under the MIT license.
 
             var index = plot.getData().indexOf(dataSeries);
             dataSeries.data = dataSeries.historyBuffer.query(hb.startIndex(), hb.lastIndex(), step, index);
+            if (indexMap) {
+                dataSeries.data.forEach(function (sample) {
+                    sample[0] = indexMap[sample[0]];
+                });
+            }
         }
     }
 
-    // remove old data series and compute a new one from the history buffer
-    function updateSeries(plot, hb) {
-        var dataSeries = [];
-        for (var i = 0; i < hb.width; i++) {
-            dataSeries.push([]);
+    // remove old data series and trigger the computation of a new one from the history buffer
+    function updateSeries(plot, historyBuffer) {
+        var dataSeries = plot.getData();
+        for (var i = 0; i < historyBuffer.width; i++) {
+            if (typeof dataSeries[i] === 'object') {
+                dataSeries[i].data = [];
+            } else {
+                dataSeries[i] = [];
+            }
         }
 
         plot.setData(dataSeries);
@@ -44,11 +54,11 @@ Licensed under the MIT license.
         plot.draw();
     }
 
-    // called on every history buffer change. 
-    function triggerDataUpdate(plot, hb) {
+    // called on every history buffer change.
+    function triggerDataUpdate(plot, historyBuffer) {
         if (!plot.dataUpdateTriggered) {
             plot.dataUpdateTriggered = requestAnimationFrame(function () { // throttle charting computation/drawing to the browser frame rate
-                updateSeries(plot, hb);
+                updateSeries(plot, historyBuffer);
                 drawChart(plot);
                 plot.dataUpdateTriggered = null;
             });
@@ -58,13 +68,13 @@ Licensed under the MIT license.
     // plugin entry point
     function init(plot) {
         plot.hooks.processOptions.push(function (plot) {
-            var hb = plot.getOptions().series.historyBuffer; // looks for the historyBuffer option
-            if (hb) {
+            var historyBuffer = plot.getOptions().series.historyBuffer; // looks for the historyBuffer option
+            if (historyBuffer) {
                 plot.hooks.processRawData.push(processRawData); // enable charting plugin for this flot chart
-                hb.onChange(function () {
-                    triggerDataUpdate(plot, hb); // call triggerDataUpdate on every historyBuffer modification
+                historyBuffer.onChange(function () {
+                    triggerDataUpdate(plot, historyBuffer); // call triggerDataUpdate on every historyBuffer modification
                 });
-                updateSeries(plot, hb);
+                updateSeries(plot, historyBuffer);
             }
         });
     }
