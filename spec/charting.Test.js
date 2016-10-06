@@ -9,7 +9,7 @@ describe('A Flot chart', function () {
     var placeholder;
 
     beforeEach(function () {
-        var fixture = setFixtures('<div style="width: 800px;height: 600px">').find('.demo-container').get(0);
+        var fixture = setFixtures('<div id="demo-container" style="width: 800px;height: 600px">').find('#demo-container').get(0);
         placeholder = $('<div id="placeholder" style="width: 100%;height: 100%">');
         placeholder.appendTo(fixture);
     });
