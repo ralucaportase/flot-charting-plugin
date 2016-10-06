@@ -62,6 +62,20 @@ Licensed under the MIT license.
         this.updateSegmentTrees();
     };
 
+    /* clear the history buffer */
+    HistoryBuffer.prototype.clear = function () {
+        for (var i = 0; i < this.width; i++) {
+            this.buffers[i].empty();
+        }
+
+        this.count = 0; // todo fire changes and upate lastindex, startindex
+        this.rebuildSegmentTrees();
+        this.changed = true;
+        if (this.callOnChange) {
+            this.callOnChange();
+        }
+    };
+
     /* change the capacity of the History Buffer and clean all the data inside it */
     HistoryBuffer.prototype.setCapacity = function (newCapacity) {
         if (newCapacity !== this.capacity) {
@@ -104,7 +118,7 @@ Licensed under the MIT license.
 
     /* store an element in the history buffer, don't update stats */
     HistoryBuffer.prototype.pushNoStatsUpdate = function (item) {
-        if (this.width === 1) {
+        if (typeof item === 'number' && this.width === 1) {
             this.buffer.push(item);
         } else {
             if (Array.isArray(item) && item.length === this.width) {
@@ -183,6 +197,7 @@ Licensed under the MIT license.
             if (levelIndex >= start) {
                 nodes.push(treeLevel.nodes.get(levelIndex));
             }
+
             levelIndex += treeLevel.step;
         }
 
@@ -200,6 +215,7 @@ Licensed under the MIT license.
             for (var i = start; i < last; i++) {
                 res.push(this.get(i));
             }
+
             return res;
         }
     };
@@ -234,7 +250,6 @@ Licensed under the MIT license.
         this.callOnChange = f;
     };
 
-
     /* get a decimated series, starting at the start sample, ending at the end sample with a provided step */
     HistoryBuffer.prototype.query = function (start, end, step, index) {
         if (index === undefined) {
@@ -245,6 +260,7 @@ Licensed under the MIT license.
             this.updateSegmentTrees();
             this.changed = false;
         }
+
         return this.trees[index].query(start, end, step);
     };
 
