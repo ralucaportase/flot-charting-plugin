@@ -10,6 +10,21 @@ describe('A History Buffer', function () {
     var twoLevelsTreeLength = oneLevelTreeLength * HistoryBuffer.prototype.getDefaultBranchingFactor();
     var threeLevelsTreeLength = twoLevelsTreeLength * HistoryBuffer.prototype.getDefaultBranchingFactor();
 
+    it('has a clear method', function () {
+        var hb = new HistoryBuffer(10);
+
+        hb.clear();
+        expect(hb.capacity).toBe(10);
+    });
+
+    it('clear method clears the data', function () {
+        var hb = new HistoryBuffer(10);
+        hb.appendArray([1, 2, 3]);
+
+        hb.clear();
+        expect(hb.count).toBe(0);
+    });
+
     it('has a capacity property', function () {
         var hb = new HistoryBuffer(10);
 
