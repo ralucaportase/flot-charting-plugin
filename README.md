@@ -51,6 +51,6 @@ The complexity of drawing a chart of width P pixels with a history buffer of len
 Examples and tests
 ------------------
 
-Interactive example: https://rawgit.com/cipix2000/flot-charting/master/charting.html
+Interactive example: https://rawgit.com/cipix2000/flot-charting/master/example.html
 
 Run the tests in your browser: https://rawgit.com/cipix2000/flot-charting/master/SpecRunner.html
