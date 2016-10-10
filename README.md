@@ -48,7 +48,9 @@ Appending an array of length n to a history buffer is a linear time operation _O
 
 The complexity of drawing a chart of width P pixels with a history buffer of length N, of which M are newly added elements is _O(p)*O(log(N))*O(M logM)_  explain this in a standalone doc!!
 
-Tests
-------
+Examples and tests
+------------------
 
-[Run the tests in your browser] (https://rawgit.com/cipix2000/flot-charting/master/SpecRunner.html)
+Interactive example: https://rawgit.com/cipix2000/flot-charting/master/example.html
+
+Run the tests in your browser: https://rawgit.com/cipix2000/flot-charting/master/SpecRunner.html
