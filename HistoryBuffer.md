@@ -6,12 +6,12 @@ A historyBuffer is a data structure that enables efficient charting operations o
 Theory of operation
 -------------------
 
-In the case of large data buffers it is inneficient to draw every point of the chart. Doing this results in many almost vertical lines drawn over the same stripe of 
+In the case of large data buffers it is inefficient to draw every point of the chart. Doing this results in many almost vertical lines drawn over the same stripe of
 pixels over and over again. Drawing a line on a canvas is an expensive operation that must be avoided if possible.
 
-One method of avoiding the repeated drawing is to reduce the amount of data points we draw on the chart by subsampling the data, also called decimation.
+One method of avoiding the repeated drawing is to reduce the amount of data points we draw on the chart by sub-sampling the data, also called decimation.
 
-There are many ways to select the samples in the data; one of the best ones is to divide the interval we want to plot into "1 pixel wide buckets" and then for 
+There are many ways to select the samples in the data; one of the best ones is to divide the interval we want to plot into "1 pixel wide buckets" and then for
 each bucket select the maximum and minimum as subsamples. This method results in a drawing that looks very similar with the one in which all samples are drawn.
 
 

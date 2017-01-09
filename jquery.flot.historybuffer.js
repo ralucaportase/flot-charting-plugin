@@ -5,6 +5,60 @@ Licensed under the MIT license.
 */
 /*globals CBuffer, SegmentTree, module*/
 
+/**
+# HistoryBuffer
+
+> A historyBuffer is a data structure that enables efficient charting operations
+on a sliding window of data points.
+
+In the case of large data buffers it is inefficient to draw every point of the
+chart. Doing this results in many almost vertical lines drawn over the same
+stripe of pixels over and over again. Drawing a line on a canvas is an expensive
+operation that must be avoided if possible.
+
+One method of avoiding the repeated drawing is to reduce the amount of data points
+we draw on the chart by sub-sampling the data, also called decimation.
+
+There are many ways to decimate the data; the one this history buffer implements
+is to divide data into "1 pixel wide buckets" and then for each bucket select the
+maximum and minimum as subsamples. This method results in a drawing that looks
+visually similar with the one in which all samples are drawn.
+
+The history buffer is a circular buffer holding the chart data accompanied by an
+acceleration structure - a segment tree of min/max values.
+
+The segment tree is only enabled for big history buffers.
+
+The history buffer is able to store multiple "parallel" data sets
+
+Example:
+```javascript
+var hb1 = new HistoryBuffer(1024);
+
+// in a history buffer with width 1 we can push scalars
+hb1.push(1);
+hb1.push(2);
+
+console.log(hb1.toArray()); //[1, 2]
+
+// as well as 1 elements arrays
+hb1.push([3]);
+hb1.push([4]);
+
+console.log(hb1.toArray()); //[1, 2, 3, 4]
+
+var hb1 = new HistoryBuffer(1024, 2);
+
+// in a history buffer with width > 1 we can only push arrays
+hb1.push([1, 5]);
+hb1.push([2, 6]);
+
+console.log(hb2.toArray()); //[[1, 5], [2, 6]]
+```
+
+*/
+
+/** ## HistoryBuffer methods*/
 (function (global) {
     'use strict';
 
@@ -13,7 +67,8 @@ Licensed under the MIT license.
      */
     var defaultBranchFactor = 32; // 32 for now. TODO tune the branching factor.
 
-    /* Chart History buffer */
+    /** **HistoryBuffer(capacity, width)** - the History buffer constructor creates
+    a new history buffer with the specified capacity (default: 1024) and width (default: 1)*/
     var HistoryBuffer = function (capacity, width) {
         this.capacity = capacity || 1024;
         this.width = width || 1;
@@ -62,7 +117,7 @@ Licensed under the MIT license.
         this.updateSegmentTrees();
     };
 
-    /* clear the history buffer */
+    /** **clear()** - clears the history buffer */
     HistoryBuffer.prototype.clear = function () {
         for (var i = 0; i < this.width; i++) {
             this.buffers[i].empty();
@@ -76,7 +131,7 @@ Licensed under the MIT license.
         }
     };
 
-    /* change the capacity of the History Buffer and clean all the data inside it */
+    /** **setCapacity(newCapacity)** changes the capacity of the History Buffer and clears all the data inside it */
     HistoryBuffer.prototype.setCapacity = function (newCapacity) {
         if (newCapacity !== this.capacity) {
             this.capacity = newCapacity;
@@ -96,7 +151,8 @@ Licensed under the MIT license.
         }
     };
 
-    /* change the width of the History Buffer and clean all the data inside it */
+    /** **setWidth(newWidth)** - changes the width of the History Buffer and clears
+    all the data inside it */
     HistoryBuffer.prototype.setWidth = function (newWidth) {
         if (newWidth !== this.width) {
             this.width = newWidth;
@@ -129,7 +185,7 @@ Licensed under the MIT license.
         }
     };
 
-    /* store an element in the history buffer */
+    /** **push(item)** - adds an element to the history buffer */
     HistoryBuffer.prototype.push = function (item) {
         this.pushNoStatsUpdate(item);
         this.count++;
@@ -141,17 +197,17 @@ Licensed under the MIT license.
 
     };
 
-    /* the index of the oldest element in the buffer*/
+    /** **startIndex()** - returns the index of the oldest element in the buffer*/
     HistoryBuffer.prototype.startIndex = function () {
         return Math.max(0, this.count - this.capacity);
     };
 
-    /* the index of the newest element in the buffer*/
+    /** **lastIndex()** - returns the index of the newest element in the buffer*/
     HistoryBuffer.prototype.lastIndex = function () {
         return this.startIndex() + this.buffer.size;
     };
 
-    /*get the nth element in the buffer*/
+    /** **get(n)** - returns the nth element in the buffer*/
     HistoryBuffer.prototype.get = function (index) {
         index -= this.startIndex();
         if (this.width === 1) {
@@ -167,7 +223,7 @@ Licensed under the MIT license.
         }
     };
 
-    /* append an array of elements to the buffer*/
+    /** **appendArray(arr)** - appends an array of elements to the buffer*/
     HistoryBuffer.prototype.appendArray = function (arr) {
         for (var i = 0; i < arr.length; i++) {
             this.pushNoStatsUpdate(arr[i]);
@@ -204,7 +260,7 @@ Licensed under the MIT license.
         return nodes;
     };
 
-    /* returns an array with all the elements in the buffer*/
+    /** **toArray()** - returns the content of the history buffer as an array */
     HistoryBuffer.prototype.toArray = function () {
         if (this.width === 1) {
             return this.buffer.toArray();
@@ -232,6 +288,8 @@ Licensed under the MIT license.
         this.lastUpdatedIndex = this.firstUpdatedIndex + buffer.size;
     };
 
+    /** **toDataSeries()** - returns the content of the history buffer into a
+    flot data series*/
     HistoryBuffer.prototype.toDataSeries = function (index) {
         var buffer = this.buffer;
 
@@ -250,7 +308,9 @@ Licensed under the MIT license.
         this.callOnChange = f;
     };
 
-    /* get a decimated series, starting at the start sample, ending at the end sample with a provided step */
+    /** **query(start, end, step, index)** - decimates teh data set at the
+    provided *index*, starting at the start sample, ending at the end sample
+    with the provided step */
     HistoryBuffer.prototype.query = function (start, end, step, index) {
         if (index === undefined) {
             index = 0;
