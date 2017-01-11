@@ -308,7 +308,7 @@ console.log(hb2.toArray()); //[[1, 5], [2, 6]]
         this.callOnChange = f;
     };
 
-    /** **query(start, end, step, index)** - decimates teh data set at the
+    /** **query(start, end, step, index)** - decimates the data set at the
     provided *index*, starting at the start sample, ending at the end sample
     with the provided step */
     HistoryBuffer.prototype.query = function (start, end, step, index) {
