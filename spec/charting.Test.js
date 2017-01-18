@@ -29,7 +29,7 @@ describe('A Flot chart', function () {
             }
         });
 
-        expect(plot.getData()[0].data).toEqual([[0, 33]]);
+        expect(plot.getData()[0].datapoints.points).toEqual([0, 33]);
     });
 
     it('keeps track of the total number of elements introduced in the buffer', function () {
@@ -42,6 +42,6 @@ describe('A Flot chart', function () {
             }
         });
 
-        expect(plot.getData()[0].data).toEqual([[1, 34]]);
+        expect(plot.getData()[0].datapoints.points).toEqual([1, 34]);
     });
 });

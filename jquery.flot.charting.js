@@ -9,7 +9,7 @@ Licensed under the MIT license.
     'use strict';
 
     // flot hook which decimates the data from the historyBuffer and converts it into a format that flot understands
-    function processRawData(plot, dataSeries) {
+    function processRawData(plot, dataSeries, x, datapoints) {
         var indexMap; // this a "dictionary" from 0 based indexes in the history buffer to target values
         if (dataSeries.historyBuffer) {
             var historyBuffer = dataSeries.historyBuffer;
@@ -25,12 +25,16 @@ Licensed under the MIT license.
             }
 
             var index = plot.getData().indexOf(dataSeries);
-            dataSeries.data = dataSeries.historyBuffer.query(historyBuffer.startIndex(), historyBuffer.lastIndex(), step, index);
-            if (indexMap) {
-                dataSeries.data.forEach(function (sample) {
-                    sample[0] = indexMap[sample[0]];
-                });
+            var data = dataSeries.historyBuffer.query(historyBuffer.startIndex(), historyBuffer.lastIndex(), step, index);
+
+            var points = datapoints.points;
+            for (var i = 0, j=0; i < data.length; i++, j+=2) {
+                points[j] = indexMap ? indexMap[data[i][0]] : data[i][0];
+                points[j+1] = data[i][1];
             }
+
+            points.length = data.length * 2;
+            datapoints.pointsize = 2;
         }
     }
 
@@ -40,6 +44,10 @@ Licensed under the MIT license.
         for (var i = 0; i < historyBuffer.width; i++) {
             if (typeof dataSeries[i] === 'object') {
                 dataSeries[i].data = [];
+                // although it would be nice to reuse data points, flot does nasty
+                // things with the dataSeries (deep copy, showing with ~50% percent
+                // on the timeline)
+                delete dataSeries[i].datapoints;
             } else {
                 dataSeries[i] = [];
             }

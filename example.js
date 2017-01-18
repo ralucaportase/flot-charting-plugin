@@ -35,6 +35,12 @@ $(function () {
         },
         legend: {
             show: false
+        },
+        xaxis: {
+            show: true
+        },
+        yaxis: {
+            show: true
         }
     });
 
