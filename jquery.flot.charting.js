@@ -53,6 +53,10 @@ Licensed under the MIT license.
             }
         }
 
+        if (dataSeries.length > historyBuffer.width) {
+            dataSeries.length = historyBuffer.width;
+        }
+
         plot.setData(dataSeries);
     }
 
