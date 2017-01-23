@@ -1,6 +1,6 @@
 {
   "name": "flot-charting",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Flot charting plugin",
   "main": "jquery.flot.charting.js",
   "directories": {
