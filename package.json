@@ -13,18 +13,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://cipix2000@github.com/cipix2000/flot-charting.git"
+    "url": "https://cipix2000@github.com/ni-kismet/flot-charting.git"
   },
   "keywords": [
     "Flot",
     "charting"
   ],
-  "author": "Ciprian Ceteras",
-  "license": "ISC",
+  "author": "National Instruments Corporation",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cipix2000/flot-charting/issues"
+    "url": "https://github.com/ni-kismet/flot-charting/issues"
   },
-  "homepage": "https://github.com/cipix2000/flot-charting",
+  "homepage": "https://github.com/ni-kismet/flot-charting",
   "devDependencies": {
     "engineering-flot": "^0.2.2",
     "jasmine-core": "^2.5.2",
