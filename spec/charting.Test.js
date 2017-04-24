@@ -44,4 +44,35 @@ describe('A Flot chart', function () {
 
         expect(plot.getData()[0].datapoints.points).toEqual([1, 34]);
     });
+
+    it('should not redraw if the plot was shutdown', function (done) {
+        var firstHistoryBuffer = new HistoryBuffer(1, 1),
+            options = {
+                series: {
+                    historyBuffer: firstHistoryBuffer
+                },
+                xaxes: [
+                    { position: 'bottom', autoScale: 'exact' }
+                ],
+                yaxes: [
+                    { position: 'left', autoScale: 'exact' }
+                ]
+            };
+        firstHistoryBuffer.push(10);
+        plot = $.plot(placeholder, [[]], options);
+
+        var secondHistoryBuffer = new HistoryBuffer(1, 1);
+        options.series.historyBuffer = secondHistoryBuffer;
+        secondHistoryBuffer.push(20);
+        var newPlot = $.plot(placeholder, [[]], options);
+
+        // continue pushing to an obsolete history buffer
+        firstHistoryBuffer.push(30);
+
+        requestAnimationFrame(function() {
+            expect(plot.getData()[0].datapoints.points).toEqual([0, 10]);
+            expect(newPlot.getData()[0].datapoints.points).toEqual([0, 20]);
+            done();
+        });
+    });
 });
