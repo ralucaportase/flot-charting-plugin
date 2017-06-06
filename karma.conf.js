@@ -7,13 +7,13 @@ module.exports = function (config) {
     'use strict';
 
     var coverage_sources = [
-        'lib/cbuffer.js',
         'jquery.flot.historybuffer.js',
         'jquery.flot.segment-tree.js',
         'jquery.flot.charting.js'
     ];
 
     var sources = [
+        'lib/cbuffer.js',
         'jquery.js',
         'node_modules/engineering-flot/dist/jquery.flot.js',
         'lib/jsverify.standalone.js',

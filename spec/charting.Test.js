@@ -75,4 +75,70 @@ describe('A Flot chart', function () {
             done();
         });
     });
+
+    it('allows the plot styles to be specified in the initial data series', function () {
+        var hb = new HistoryBuffer(10, 1);
+        hb.push(33);
+        hb.push(34);
+
+        plot = $.plot(placeholder, [{data:[], color: 'red', lines: { lineWidth: 5}}], {
+            series: {
+                historyBuffer: hb
+            }
+        });
+
+        expect(plot.getData()[0].color).toEqual('red');
+        expect(plot.getData()[0].lines.lineWidth).toEqual(5);
+    });
+
+    it('allows more plot styles than history buffers', function () {
+        var hb = new HistoryBuffer(10, 1);
+        hb.push(33);
+        hb.push(34);
+
+        plot = $.plot(placeholder,
+            [
+                {data:[], color: 'red', lines: { lineWidth: 5}},
+                {data:[], color: 'blue', lines: { lineWidth: 3}},
+            ]
+            , {
+            series: {
+                historyBuffer: hb
+            }
+        });
+
+        expect(plot.getData()[0].color).toEqual('red');
+        expect(plot.getData()[0].lines.lineWidth).toEqual(5);
+        expect(plot.getData()[1].color).toEqual('blue');
+        expect(plot.getData()[1].lines.lineWidth).toEqual(3);
+    });
+
+    it('when history buffer is widened the additional plot settings are taken into account', function (done ) {
+        var hb = new HistoryBuffer(10, 1);
+        hb.push(33);
+        hb.push(34);
+
+        plot = $.plot(placeholder,
+            [
+                {data:[], color: 'red', lines: { lineWidth: 5}},
+                {data:[], color: 'blue', lines: { lineWidth: 3}},
+            ]
+            , {
+            series: {
+                historyBuffer: hb
+            }
+        });
+
+        hb.setWidth(2);
+        hb.push([2,3]);
+        hb.push([3,4]);
+
+        requestAnimationFrame(function() {
+            expect(plot.getData()[0].color).toEqual('red');
+            expect(plot.getData()[0].lines.lineWidth).toEqual(5);
+            expect(plot.getData()[1].color).toEqual('blue');
+            expect(plot.getData()[1].lines.lineWidth).toEqual(3);
+            done();
+        });
+    });
 });
