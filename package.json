@@ -7,6 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
+    "docs": "node ./update_docs.js",
     "test": "node node_modules/karma/bin/karma start --single-run",
     "coverage": "node node_modules/karma/bin/karma start --single-run --coverage --browsers=Chrome",
     "preversion": "npm test"
@@ -37,6 +38,7 @@
     "karma-jasmine-html-reporter": "^0.2.2",
     "karma-jasmine-jquery": "^0.1.1",
     "karma-phantomjs-launcher": "^1.0.2",
-    "karma-spec-reporter": "0.0.31"
+    "karma-spec-reporter": "0.0.31",
+    "ljs": "^0.3.2"
   }
 }

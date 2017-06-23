@@ -29,8 +29,6 @@ acceleration structure - a segment tree of min/max values.
 
 The segment tree is only enabled for big history buffers.
 
-The history buffer is able to store multiple "parallel" data sets
-
 Example:
 ```javascript
 var hb1 = new HistoryBuffer(1024);
@@ -47,14 +45,40 @@ hb1.push([4]);
 
 console.log(hb1.toArray()); //[1, 2, 3, 4]
 
-var hb1 = new HistoryBuffer(1024, 2);
+// or append an array
+hb1.appendArray([5, 6]);
+
+console.log(hb1.toArray()); //[1, 2, 3, 4, 5, 6]
+```
+
+The history buffer is able to store multiple "parallel" data sets. Example:
+
+```javascript
+var hb2 = new HistoryBuffer(1024, 2);
 
 // in a history buffer with width > 1 we can only push arrays
-hb1.push([1, 5]);
-hb1.push([2, 6]);
+hb2.push([1, 11]);
+hb2.push([2, 12]);
+hb2.push([3, 13]);
 
-console.log(hb2.toArray()); //[[1, 5], [2, 6]]
+console.log(hb2.toArray()); //[[1, 11], [2, 12], [3, 13]]
+
+// or append an array of arrays
+hb2.appendArray([[4, 14], [5, 15], [6, 16]]);
+
+console.log(hb2.toArray()); //[[1, 11], [2, 12], [3, 13], [4, 14], [5, 15], [6, 16]]
 ```
+
+Operations accelerated by a historyBuffer
+-----------------------------------------
+The common charting operations performed on a history buffer are
+
+* inserting elements at the head
+* inserting m elements at the head
+* deleting elements at the tail
+* deleting m elements at the tail
+* compute min/max on a range
+* query for a "visually interesting" data subsample on a range
 
 */
 
