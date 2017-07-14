@@ -9,12 +9,16 @@ module.exports = function (config) {
     var coverage_sources = [
         'jquery.flot.historybuffer.js',
         'jquery.flot.segment-tree.js',
+        'jquery.flot.historybuffer.numeric.js',
+        'jquery.flot.historybuffer.analogWaveform.js',
         'jquery.flot.charting.js'
     ];
 
     var sources = [
         'lib/cbuffer.js',
         'jquery.js',
+        'node_modules/ni-data-types/sources/niTimeStamp.js',
+        'node_modules/ni-data-types/sources/niAnalogWaveform.js',
         'node_modules/engineering-flot/dist/jquery.flot.js',
         'lib/jsverify.standalone.js',
         'lib/jasmineHelpers2.js',

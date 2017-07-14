@@ -1,14 +1,5 @@
-/* global describe, it, expect, jasmine, HistoryBuffer */
-/* jshint browser: true*/
-
-/* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js* */
-
-describe('A History Buffer', function () {
+describe('A HistoryBuffer works with numeric data', function () {
     'use strict';
-
-    var oneLevelTreeLength = HistoryBuffer.prototype.getDefaultBranchingFactor();
-    var twoLevelsTreeLength = oneLevelTreeLength * HistoryBuffer.prototype.getDefaultBranchingFactor();
-    var threeLevelsTreeLength = twoLevelsTreeLength * HistoryBuffer.prototype.getDefaultBranchingFactor();
 
     it('has a clear method', function () {
         var hb = new HistoryBuffer(10);
@@ -161,154 +152,259 @@ describe('A History Buffer', function () {
 
             expect(spy).toHaveBeenCalled();
         });
+
+        it('onChange is called on clear', function () {
+            var hb = new HistoryBuffer(10);
+            var spy = jasmine.createSpy('onChange');
+            hb.appendArray([1, 2]);
+
+            hb.onChange(spy);
+            hb.clear();
+
+            expect(spy).toHaveBeenCalled();
+        });
+
+        it('onChange is called when changing types from numeric to analogWaveform', function () {
+            var hb = new HistoryBuffer(10);
+            var spy = jasmine.createSpy('onChange');
+            hb.onChange(spy);
+            hb.setType('analogWaveform');
+
+            expect(spy).toHaveBeenCalled();
+        });
+
+        it('onChange is called when changing types from analogWaveform  to numeric', function () {
+            var hb = new HistoryBuffer(10);
+            hb.setType('analogWaveform');
+
+            var spy = jasmine.createSpy('onChange');
+            hb.onChange(spy);
+            hb.setType('numeric');
+
+            expect(spy).toHaveBeenCalled();
+        });
+
+        it('onChange is not called when the type of the buffer is the desired one already', function () {
+            var hb = new HistoryBuffer(10);
+
+            var spy = jasmine.createSpy('onChange');
+            hb.onChange(spy);
+            hb.setType('numeric');
+
+            expect(spy).not.toHaveBeenCalled();
+        });
+    });
+});
+
+describe('A History Buffer works with analogWaveform data', function () {
+    'use strict';
+    var aw, aw1, aw2, aw3;
+
+    function analogWaveformHB(capacity, width) {
+        var hb = new HistoryBuffer(capacity, width);
+        hb.setType('analogWaveform');
+
+        return hb
+    }
+
+    beforeEach(function () {
+        aw = new NIAnalogWaveform({
+            t0: 4,
+            dt: 1,
+            Y:[1, 2, 3]
+        });
+
+        aw1 = new NIAnalogWaveform({
+            t0: 1,
+            dt: 1,
+            Y:[1, 2, 3]
+        });
+
+        aw2 = new NIAnalogWaveform({
+            t0: 8,
+            dt: 1,
+            Y:[4, 3, 2]
+        });
+
+        aw2 = new NIAnalogWaveform({
+            t0: 10,
+            dt: 1,
+            Y:[0, 1, 2]
+        });
     });
 
-    describe('A segment tree', function () {
-        it('is created on hb creation', function () {
-            var hb = new HistoryBuffer(128);
+    it('has a clear method', function () {
+        var hb = analogWaveformHB(10);
 
-            expect(hb.tree).toEqual(jasmine.any(Object));
+        hb.clear();
+        expect(hb.capacity).toBe(10);
+    });
+
+    it('clear method clears the data', function () {
+        var hb = analogWaveformHB(10);
+
+        hb.push(aw);
+        hb.clear();
+        expect(hb.count).toBe(0);
+    });
+
+    it('has a capacity property', function () {
+        var hb = analogWaveformHB(10);
+
+        expect(hb.capacity).toBe(10);
+    });
+
+    it('has a setCapacity method', function () {
+        var hb = analogWaveformHB(10);
+
+        hb.setCapacity(20);
+        expect(hb.capacity).toBe(20);
+    });
+
+    it('setCapacity method clears the data', function () {
+        var hb = analogWaveformHB(10);
+
+        hb.appendArray([aw, aw1]);
+        hb.setCapacity(20);
+
+        expect(hb.count).toBe(0);
+    });
+
+    it('has a width property', function () {
+        var hb = analogWaveformHB(10, 3);
+
+        expect(hb.width).toBe(3);
+    });
+
+    it('has a setWidth method', function () {
+        var hb = analogWaveformHB(10, 1);
+
+        hb.setWidth(2);
+        expect(hb.width).toBe(2);
+    });
+
+    it('setWidth method clears the data', function () {
+        var hb = analogWaveformHB(10, 1);
+
+        hb.appendArray([aw, aw1]);
+        hb.setWidth(2);
+
+        expect(hb.count).toBe(0);
+    });
+
+    it('has an appendArray method', function () {
+        var hb = analogWaveformHB(10);
+
+        hb.appendArray([aw, aw1]);
+
+        [aw, aw1, undefined].forEach(function (exp, i) {
+            expect(hb.get(i)).toBe(exp);
+        });
+    });
+
+    it('appendArray method works with arrays bigger that the hb capacity', function () {
+        var hb = analogWaveformHB(2);
+
+        hb.appendArray([aw, aw1, aw2]);
+
+        [aw1, aw2].forEach(function (exp, i) {
+            expect(hb.get(i + 1)).toBe(exp);
+        });
+    });
+
+    it('appendArray method works for plots with two data series', function () {
+        var hb = analogWaveformHB(10, 2);
+
+        hb.appendArray([[aw, aw1], [aw2, aw3]]);
+
+        [[aw, aw1], [aw2, aw3], [undefined, undefined]].forEach(function (exp, i) {
+            expect(hb.get(i)).toEqual(exp);
+        });
+    });
+
+    it('has a toArray method', function () {
+        var hb = analogWaveformHB(10);
+
+        hb.appendArray([aw, aw1]);
+
+        expect(hb.toArray()).toEqual([aw, aw1]);
+    });
+
+    it('toArray method works for plots with two data series', function () {
+        var hb = analogWaveformHB(10, 2);
+
+        hb.appendArray([[aw, aw1], [aw2, aw3]]);
+
+        expect(hb.toArray()).toEqual([[aw, aw1], [aw2, aw3]]);
+    });
+
+    it('has a toDataSeries method', function () {
+        var hb = analogWaveformHB(10);
+
+        hb.appendArray([aw, aw1]);
+
+        expect(hb.toDataSeries(0)).toEqual([[4, 1], [5, 2], [6, 3], [null, null], [1, 1], [2, 2], [3, 3]]);
+    });
+
+
+    describe('onChange notification', function () {
+        it('has an onChange method', function () {
+            var hb = analogWaveformHB(10, 1);
+
+            expect(hb.onChange).toEqual(jasmine.any(Function));
         });
 
-        it('has multiple segment trees for muliple data series', function () {
-            var hb = new HistoryBuffer(128, 2);
+        it('onChange is called on push', function () {
+            var hb = analogWaveformHB(10);
 
-            expect(hb.trees[0]).toEqual(jasmine.any(Object));
-            expect(hb.trees[1]).toEqual(jasmine.any(Object));
+            var spy = jasmine.createSpy('onChange');
+
+            hb.onChange(spy);
+            hb.push(aw);
+            expect(spy).toHaveBeenCalled();
         });
 
-        describe('One level deep', function () {
-            it('computes the max and min correctly for tree elements', function () {
-                var hb = new HistoryBuffer(10);
+        it('onChange is called on appendArray', function () {
+            var hb = analogWaveformHB(10);
+            var spy = jasmine.createSpy('onChange');
 
-                hb.appendArray([1, 2, 3]);
+            hb.onChange(spy);
+            hb.appendArray([aw, aw1]);
 
-                hb.updateSegmentTrees();
-
-                var firstTree = hb.trees[0].tree;
-
-                expect(firstTree.depth).toEqual(1);
-                expect(firstTree.levels).toEqual(jasmine.any(Array));
-                expect(firstTree.levels.length).toEqual(1);
-                expect(firstTree.levels[0].nodes.size).toBe(2);
-                expect(firstTree.levels[0].nodes.get(0).min).toBe(1);
-                expect(firstTree.levels[0].nodes.get(0).max).toBe(3);
-            });
-
-            it('computes the max and min correctly for tree elements, two data series', function () {
-                var hb = new HistoryBuffer(10, 2);
-
-                hb.appendArray([[1, 10], [2, 20], [3, 30]]);
-
-                hb.updateSegmentTrees();
-                var firstTree = hb.trees[0].tree;
-                var secondTree = hb.trees[1].tree;
-
-                // compare against some precalculated values
-                expect(firstTree.depth).toEqual(1);
-                expect(secondTree.depth).toEqual(1);
-                expect(firstTree.levels).toEqual(jasmine.any(Array));
-                expect(secondTree.levels).toEqual(jasmine.any(Array));
-                expect(firstTree.levels.length).toEqual(1);
-                expect(secondTree.levels.length).toEqual(1);
-                expect(firstTree.levels[0].nodes.size).toBe(2);
-                expect(secondTree.levels[0].nodes.size).toBe(2);
-                expect(firstTree.levels[0].nodes.get(0).min).toBe(1);
-                expect(secondTree.levels[0].nodes.get(0).min).toBe(10);
-                expect(firstTree.levels[0].nodes.get(0).max).toBe(3);
-                expect(secondTree.levels[0].nodes.get(0).max).toBe(30);
-            });
-
-            it('computes the max and min correctly for 64 elements', function () {
-                var hb = new HistoryBuffer(64 * 2); //half full history buffer
-
-                for (var i = 0; i < 64; i++) {
-                    hb.push(i);
-                }
-
-                hb.updateSegmentTrees();
-                var firstTree = hb.trees[0].tree;
-
-                // compare against some precalculated values
-                expect(firstTree.depth).toEqual(1);
-                expect(firstTree.levels).toEqual(jasmine.any(Array));
-                expect(firstTree.levels.length).toEqual(1);
-                expect(firstTree.levels[0].nodes.size).toBe(5);
-                expect(firstTree.levels[0].nodes.get(0).min).toBe(0);
-                expect(firstTree.levels[0].nodes.get(0).max).toBe(31);
-                expect(firstTree.levels[0].nodes.get(1).min).toBe(32);
-                expect(firstTree.levels[0].nodes.get(1).max).toBe(63);
-            });
+            expect(spy).toHaveBeenCalled();
         });
 
-        describe('Two levels deep', function () {
-            it('has a proper segment tree with two levels', function () {
-                var hb = new HistoryBuffer(twoLevelsTreeLength * 2);
+        it('onChange is called on setCapacity', function () {
+            var hb = analogWaveformHB(10);
+            var spy = jasmine.createSpy('onChange');
+            hb.appendArray([aw, aw1]);
 
-                expect(hb.tree.tree.depth).toEqual(2);
-            });
+            hb.onChange(spy);
+            hb.setCapacity(20);
 
-            it('has a proper segment trees with two levels on multiple data series', function () {
-                var hb = new HistoryBuffer(twoLevelsTreeLength * 2, 2);
-
-                expect(hb.tree.tree.depth).toEqual(2);
-                expect(hb.trees[1].tree.depth).toEqual(2);
-            });
-
-            it('computes the max and min correctly for two levels deep trees', function () {
-                var hb = new HistoryBuffer(twoLevelsTreeLength * 2);
-
-                for (var i = 0; i < twoLevelsTreeLength * 2; i++) {
-                    hb.push(i);
-                }
-
-                hb.updateSegmentTrees();
-                var firstTree = hb.trees[0].tree;
-
-                // compare against some precalculated values
-                expect(firstTree.levels).toEqual(jasmine.any(Array));
-                expect(firstTree.levels.length).toEqual(2);
-                expect(firstTree.levels[1].nodes.size).toBe(3);
-                expect(firstTree.levels[1].nodes.get(0).min).toBe(0);
-                expect(firstTree.levels[1].nodes.get(0).max).toBe(1023);
-                expect(firstTree.levels[1].nodes.get(1).min).toBe(1024);
-                expect(firstTree.levels[1].nodes.get(1).max).toBe(2047);
-            });
+            expect(spy).toHaveBeenCalled();
         });
 
-        describe('Three levels deep', function () {
-            it('has a proper segment tree with three levels', function () {
-                var hb = new HistoryBuffer(threeLevelsTreeLength * 2);
+        it('onChange is called on setWidth', function () {
+            var hb = analogWaveformHB(10);
+            var spy = jasmine.createSpy('onChange');
+            hb.appendArray([aw, aw1]);
 
-                expect(hb.tree.tree.depth).toEqual(3);
-            });
+            hb.onChange(spy);
+            hb.setWidth(2);
 
-            it('has a proper segment trees with three levels on multiple data series', function () {
-                var hb = new HistoryBuffer(threeLevelsTreeLength * 2, 3);
+            expect(spy).toHaveBeenCalled();
+        });
 
-                expect(hb.tree.tree.depth).toEqual(3);
-                expect(hb.trees[1].tree.depth).toEqual(3);
-            });
+        it('onChange is called on clear', function () {
+            var hb = analogWaveformHB(10);
+            var spy = jasmine.createSpy('onChange');
+            hb.appendArray([aw, aw1]);
 
-            it('computes the max and min correctly for 65536 elements', function () {
-                var hb = new HistoryBuffer(threeLevelsTreeLength * 2);
+            hb.onChange(spy);
+            hb.clear();
 
-                for (var i = 0; i < threeLevelsTreeLength * 2; i++) {
-                    hb.push(i);
-                }
-
-                hb.updateSegmentTrees();
-                var firstTree = hb.trees[0].tree;
-
-                // compare against some precalculated values
-                expect(firstTree.levels).toEqual(jasmine.any(Array));
-                expect(firstTree.levels.length).toEqual(3);
-                expect(firstTree.levels[2].nodes.length).toBe(3);
-                expect(firstTree.levels[2].nodes.get(0).min).toBe(0);
-                expect(firstTree.levels[2].nodes.get(0).max).toBe(32767);
-                expect(firstTree.levels[2].nodes.get(1).min).toBe(32768);
-                expect(firstTree.levels[2].nodes.get(1).max).toBe(65535);
-            });
+            expect(spy).toHaveBeenCalled();
         });
     });
 });

@@ -10,7 +10,30 @@ $(function () {
     var root;
     var radial = false;
 
-    var buffer = new HistoryBuffer(32, 1);
+    /* get the tree nodes at the specified level that keeps the information for the specified interval*/
+    HistoryBufferNumeric.prototype.getTreeNodes = function (level, start, end) {
+        var nodes = [];
+        var treeLevel = this.tree.levels[level];
+        var levelStep = treeLevel.step;
+
+        var levelIndex = Math.floor((start - treeLevel.startIndex) / levelStep);
+
+        if ((levelIndex < 0) || (levelIndex >= treeLevel.capacity) || levelIndex > end) {
+            return nodes;
+        }
+
+        while (levelIndex < end) {
+            if (levelIndex >= start) {
+                nodes.push(treeLevel.nodes.get(levelIndex));
+            }
+
+            levelIndex += treeLevel.step;
+        }
+
+        return nodes;
+    };
+
+    var buffer = new HistoryBufferNumeric(32, 1);
     buffer.setBranchingFactor(4);
 
     $.plot('#placeholder', [], {

@@ -4,29 +4,28 @@
 $(function () {
     'use strict';
     var plot;
-    var buffer = new HistoryBuffer(100 * 1024, 4);
+    var buffer = new HistoryBufferWaveform(10, 1);
     var globalIndex = 0;
-    var chartStep = 0.0001;
+    var chartStep = 0.01;
     var arr = [];
 
     function updateData() {
-        var sin, cos, sin1, tan;
+        var sin,
+            AWdata = [];
 
-        for (var i = 0; i < 2048; i++) {
+        for (var i = 0; i < 512; i++) {
             sin = Math.sin(globalIndex * chartStep);
-            sin1 = 1 - sin;
-            cos = Math.cos(globalIndex * chartStep);
-            tan = Math.tan(globalIndex * chartStep) / 10.0;
-            tan = Math.min(tan, 3);
-            tan = Math.max(tan, -3);
             globalIndex++;
-            arr[0] = sin, arr[1] = cos, arr[2] = sin1, arr[3] = tan;
 
-            buffer.push(arr);
+            AWdata.push(sin);
         }
+
+        var aw = new NIAnalogWaveform({t0: globalIndex/256,Y:AWdata, dt:0.001});
+
+        buffer.push(aw);
     }
 
-    plot = $.plot('#placeholder', [[], [], [], []], {
+    plot = $.plot('#placeholder', [[]], {
         series: {
             historyBuffer: buffer,
             lines: {

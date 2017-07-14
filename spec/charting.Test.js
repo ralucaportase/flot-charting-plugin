@@ -2,7 +2,7 @@
 /* jshint browser: true*/
 /* brackets-xunit: includes=../lib/cbuffer.js,../jquery.flot.historybuffer.js*,../jquery.flot.js,../jquery.flot.charting.js */
 
-describe('A Flot chart', function () {
+describe('A chart', function () {
     'use strict';
 
     var plot;
@@ -23,7 +23,7 @@ describe('A Flot chart', function () {
     it('allows to specify a historyBuffer when creating the plot', function () {
         var hb = new HistoryBuffer(10, 1);
         hb.push(33);
-        plot = $.plot(placeholder, [[]], {
+        plot = $.plot(placeholder, [{}], {
             series: {
                 historyBuffer: hb
             }

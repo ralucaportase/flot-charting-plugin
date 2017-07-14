@@ -1,9 +1,4 @@
-/* global describe, it, expect, HistoryBuffer, jsc */
-/* jshint browser: true*/
-
-/* brackets-xunit: includes=../lib/cbuffer.js,../lib/jsverify.standalone.js,../lib/jasmineHelpers2.js,../jquery.flot.historybuffer.js */
-
-describe('History Buffer Query QuickCheck', function () {
+describe('HistoryBufferNumeric Query QuickCheck', function () {
     'use strict';
 
     it('should give the same answer when using the queries vs toDataSeries with step 1', function () {
@@ -11,13 +6,15 @@ describe('History Buffer Query QuickCheck', function () {
         var hb;
 
         var property = jsc.forall(shrinkableLongArrayGenerator(jsc.number()), function (array) {
-            hb = new HistoryBuffer(hbSize);
+            hb = new HistoryBufferNumeric(hbSize);
 
             for (var i = 0; i < array.length; i++) {
                 hb.push(array[i]);
             }
 
-            var toDataSeries = hb.toDataSeries();
+            var toDataSeries = hb.toDataSeries().reduce(function(arr, pair) {
+                return arr.concat(pair);
+            }, [])
             var query = hb.query(0, hb.count, 1);
 
             return JSON.stringify(toDataSeries) === JSON.stringify(query);
@@ -34,7 +31,7 @@ describe('History Buffer Query QuickCheck', function () {
         var step = 10;
 
         var property = jsc.forall(shrinkableLongArrayGenerator(jsc.number()), function (array) {
-            hb = new HistoryBuffer(hbSize);
+            hb = new HistoryBufferNumeric(hbSize);
             hb.setBranchingFactor(4);
 
             for (var i = 0; i < array.length; i++) {
@@ -70,7 +67,9 @@ describe('History Buffer Query QuickCheck', function () {
                 return a[0] - b[0];
             }); // sort by index
 
-            decimatedRes = decimatedRes.concat(section);
+            section.forEach(function (s) {
+                decimatedRes = decimatedRes.concat(s);
+            });
         }
 
         return decimatedRes;
