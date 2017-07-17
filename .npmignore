@@ -2,5 +2,7 @@
 
 !lib/cbuffer.js
 !jquery.flot.charting.js
+!jquery.flot.historybuffer.numeric.js
+!jquery.flot.historybuffer.analogWaveform.js
 !jquery.flot.historybuffer.js
 !jquery.flot.segment-tree.js
