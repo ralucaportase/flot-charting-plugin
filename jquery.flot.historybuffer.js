@@ -181,7 +181,10 @@ The common charting operations performed on a history buffer are
     Object.defineProperty(HistoryBuffer.prototype, 'count', {
         get: function() {
             return this.hb.count;
-        }
+        },
+        set: function(count) {
+            this.hb.count = count;
+        },
     });
 
     Object.defineProperty(HistoryBuffer.prototype, 'capacity', {

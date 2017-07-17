@@ -233,6 +233,14 @@ describe('A History Buffer works with analogWaveform data', function () {
         });
     });
 
+    it('has a setter and getter for count', function () {
+        var hb = analogWaveformHB(10);
+
+        expect(hb.count).toBe(0);
+        hb.count = 10;
+        expect(hb.count).toBe(10);
+    });
+
     it('has a clear method', function () {
         var hb = analogWaveformHB(10);
 
