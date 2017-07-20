@@ -104,6 +104,36 @@ describe('A HistoryBuffer works with numeric data', function () {
         expect(hb.toArray()).toEqual([[1, 2], [2, 3], [3, 4]]);
     });
 
+    it('stringify method works for plots with a single data serie', function () {
+        var hb = new HistoryBuffer(10);
+
+        hb.appendArray([1, 2, 3]);
+
+        var serializedHb = JSON.parse(JSON.stringify(hb));
+
+        expect(serializedHb['width']).toBe(1);
+        expect(serializedHb['startIndex']).toBe(0);
+        expect(serializedHb['capacity']).toBe(10);
+        expect(serializedHb['valueType']).toBe('HistoryBuffer');
+        expect(serializedHb['count']).toBe(3);
+        expect(serializedHb['data']).toEqual([1,2,3]);
+    });
+    
+    it('stringify method works for plots with multiple data series', function () {
+        var hb = new HistoryBuffer(10, 3);
+
+        hb.appendArray([[1, 2, 3], [11, 22, 33]]);
+
+        var serializedHb = JSON.parse(JSON.stringify(hb));
+
+        expect(serializedHb['width']).toBe(3);
+        expect(serializedHb['startIndex']).toBe(0);
+        expect(serializedHb['capacity']).toBe(10);
+        expect(serializedHb['valueType']).toBe('HistoryBuffer');
+        expect(serializedHb['count']).toBe(2);
+        expect(serializedHb['data']).toEqual([[1, 11], [2, 22], [3, 33]]);
+    });
+
     describe('onChange notification', function () {
         it('has an onChange method', function () {
             var hb = new HistoryBuffer(10, 1);

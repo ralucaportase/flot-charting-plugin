@@ -172,6 +172,11 @@ The common charting operations performed on a history buffer are
         return this.hb.range(index);
     };
 
+    /** **toJSON()** - returns the JSON of the data in the buffer */
+    HistoryBuffer.prototype.toJSON = function () {
+        return this.hb.toJSON();
+    };
+
     Object.defineProperty(HistoryBuffer.prototype, 'width', {
         get: function() {
             return this.hb.width;

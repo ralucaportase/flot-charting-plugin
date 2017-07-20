@@ -242,6 +242,19 @@ console.log(hb1.toDataSeries()); //[[4, 1], [5, 2], [6, 3], [null, null], [1, 1]
         }
     };
 
+    HistoryBufferWaveform.prototype.toJSON = function() {
+        var serializedHb = {
+            data: [],
+            width: this.width,
+            capacity: this.capacity,
+            valueType: 'HistoryBuffer',
+            startIndex: this.startIndex(),
+            count: this.count
+        };
+
+        return serializedHb;
+    };
+
     if (typeof module === 'object' && module.exports) {
         module.exports = HistoryBufferWaveform;
     } else {

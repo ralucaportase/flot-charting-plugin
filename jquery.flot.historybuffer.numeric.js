@@ -361,6 +361,27 @@ The common charting operations performed on a history buffer are
         return { };
     };
 
+    HistoryBufferNumeric.prototype.toJSON = function() {
+        var serializedHb = {
+            data: [],
+            width: this.width,
+            capacity: this.capacity,
+            valueType: 'HistoryBuffer',
+            startIndex: this.startIndex(),
+            count: this.count
+        };
+
+        if(this.width === 1) {
+            serializedHb['data'] = this.buffer.toArray();
+        } else {
+            for (var i = 0; i < this.width; i++) {
+                    serializedHb['data'].push(this.buffers[i].toArray());
+            }
+        }
+
+        return serializedHb;
+    };
+
     if (typeof module === 'object' && module.exports) {
         module.exports = HistoryBufferNumeric;
     } else {
