@@ -7,12 +7,26 @@ describe('A HistoryBuffer', function () {
         expect(hb.query).toEqual(jasmine.any(Function));
     });
 
+    it('has a range method', function () {
+        var hb = new HistoryBuffer(10);
+
+        expect(hb.range).toEqual(jasmine.any(Function));
+    });
+
     it('has basic query capabilities', function () {
         var hb = new HistoryBuffer(10);
 
         hb.push(5);
 
         expect(hb.query(0, 1, 1)).toEqual([0, 5]);
+    });
+
+    it('has basic range capabilities', function () {
+        var hb = new HistoryBuffer(10);
+
+        hb.push(5);
+
+        expect(hb.range(0)).toEqual({xmin:0, xmax: 0, ymin: 5, ymax: 5});
     });
 
     it('has basic query capabilities for buffers with multiple data series', function () {
@@ -22,6 +36,28 @@ describe('A HistoryBuffer', function () {
 
         expect(hb.query(0, 1, 1, 0)).toEqual([0, 5]);
         expect(hb.query(0, 1, 1, 1)).toEqual([0, 6]);
+    });
+
+    it('has basic query capabilities for buffers with multiple data series', function () {
+        var hb = new HistoryBuffer(10, 2);
+
+        hb.push([5, 6]);
+        hb.push([15, 16]);
+
+        expect(hb.range(0)).toEqual({xmin:0, xmax: 1, ymin: 5, ymax: 15});
+        expect(hb.range(1)).toEqual({xmin:0, xmax: 1, ymin: 6, ymax: 16});
+    });
+
+    it('returns empty data series when querying an empty history Buffer', function () {
+        var hb = new HistoryBuffer(10);
+
+        expect(hb.query(0, 10, 1)).toEqual([]);
+    });
+
+    it('returns empty range when querying an empty history Buffer', function () {
+        var hb = new HistoryBuffer(10);
+
+        expect(hb.range()).toEqual({});
     });
 
     it('returns empty data series when querying outside of the bounds', function () {
