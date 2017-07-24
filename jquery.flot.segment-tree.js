@@ -267,7 +267,7 @@ Licensed under the MIT license.
 
         var level = Math.floor(Math.log(intervalSize) / Math.log(hb.branchFactor));
 
-        if (level === 0) {
+        if (level <= 0) {
             for (i = start; i < end; i++) {
                 updateMinMaxFromValue(i, cbuffer.get(i - startIndex), minmax);
             }
@@ -319,25 +319,24 @@ Licensed under the MIT license.
         }
 
         if (end < firstIndex) {
-            end = firstIndex;
+            end = firstIndex - 1;
         }
 
-        if (end > lastIndex) {
-            end = lastIndex;
+        if (end > lastIndex-1) {
+            end = lastIndex-1;
         }
 
         if (step < 4) { // for small steps it is more efficient to bypass the segment tree. TODO: benchmark this
-            for (i = start; i < end; i++) {
+            for (i = start; i <= end; i++) {
                 data.push(i);
                 data.push(this.get(i));
-
             }
         } else {
             var minmax = new SegmentTreeNode();
 
             var maxIndex, minIndex;
-            for (i = start; i < end; i = Math.round( i + step)) {
-                var partialQueryEnd = Math.min(end, i + step);
+            for (i = start; i <= end; i = Math.round( i + step)) {
+                var partialQueryEnd = Math.min(end + 1, Math.round(i + step));
                 minmax.max = Number.NEGATIVE_INFINITY;
                 minmax.min = Number.POSITIVE_INFINITY;
                 minmax.minIndex = 0;

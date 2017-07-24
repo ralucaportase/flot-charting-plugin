@@ -27,9 +27,9 @@ describe('A HistoryBufferNumeric', function () {
     it('returns empty data series when querying outside of the bounds', function () {
         var hb = new HistoryBufferNumeric(10);
 
-        hb.appendArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        hb.appendArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
-        expect(hb.query(12, 13, 1)).toEqual([]);
+        expect(hb.query(13, 14, 1)).toEqual([]);
         expect(hb.query(0, 1, 1)).toEqual([]);
     });
 
@@ -38,8 +38,8 @@ describe('A HistoryBufferNumeric', function () {
 
         hb.appendArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
 
-        expect(hb.query(10, 11, 1)).toEqual([10, 10]);
-        expect(hb.query(0, 3, 1)).toEqual([2, 2]);
+        expect(hb.query(10, 10, 1)).toEqual([10, 10]);
+        expect(hb.query(0, 2, 1)).toEqual([2, 2]);
     });
 
     it('returns a decimated data series for big buffers', function () {

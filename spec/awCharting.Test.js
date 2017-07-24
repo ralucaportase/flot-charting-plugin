@@ -7,6 +7,23 @@ describe('A chart', function () {
 
     var plot;
     var placeholder;
+    var aw = new NIAnalogWaveform({
+        t0: 4,
+        dt: 1,
+        Y:[1, 2, 3]
+    });
+
+    var aw1 = new NIAnalogWaveform({
+        t0: 1,
+        dt: 1,
+        Y:[1, 2, 3]
+    });
+
+    var aw2 = new NIAnalogWaveform({
+        t0: 1,
+        dt: 1,
+        Y:[1, 2, 3, 4, 5]
+    });
 
     beforeEach(function () {
         var fixture = setFixtures('<div id="demo-container" style="width: 800px;height: 600px">').find('#demo-container').get(0);
@@ -22,11 +39,6 @@ describe('A chart', function () {
 
     it('allows to specify a HistoryBufferWaveform when creating the plot', function () {
         var hb = new HistoryBufferWaveform(10, 1);
-        var aw = new NIAnalogWaveform({
-            t0: 4,
-            dt: 1,
-            Y:[1, 2, 3]
-        });
 
         hb.push(aw);
         plot = $.plot(placeholder, [{}], {
@@ -40,17 +52,6 @@ describe('A chart', function () {
 
     it('works with multiple analogWaveforms in the HistoryBufferWaveform', function () {
         var hb = new HistoryBufferWaveform(10, 1);
-        var aw = new NIAnalogWaveform({
-            t0: 4,
-            dt: 1,
-            Y:[1, 2, 3]
-        });
-
-        var aw1 = new NIAnalogWaveform({
-            t0: 1,
-            dt: 1,
-            Y:[1, 2, 3]
-        });
 
         hb.push(aw);
         hb.push(aw1);
@@ -62,5 +63,24 @@ describe('A chart', function () {
         });
 
         expect(plot.getData()[0].datapoints.points).toEqual([4, 1, 5, 2, 6, 3, null, null, 1, 1, 2, 2, 3, 3]);
+    });
+
+    it('provides enough points to cover the visible range when working with analogWaveforms', function () {
+        var hb = new HistoryBufferWaveform(10, 1);
+
+        hb.push(aw2);
+
+        plot = $.plot(placeholder, [{}], {
+            series: {
+                historyBuffer: hb
+            },
+            xaxes: [{
+                min: 2.5,
+                max: 3.5,
+                autoscale: 'none'
+            }]
+        });
+
+        expect(plot.getData()[0].datapoints.points).toEqual([2, 2, 3, 3, 4, 4]);
     });
 });

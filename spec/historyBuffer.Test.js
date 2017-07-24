@@ -58,6 +58,32 @@ describe('A HistoryBuffer works with numeric data', function () {
         expect(hb.count).toBe(0);
     });
 
+    it('has a startIndex and lastIndex method', function () {
+        var hb = new HistoryBuffer(10, 1);
+
+        hb.appendArray([1, 2, 3]);
+
+        expect(hb.startIndex()).toBe(0);
+        expect(hb.lastIndex()).toBe(3);
+    });
+
+    it('startIndex and lastIndex methods work for an empty buffer', function () {
+        var hb = new HistoryBuffer(10, 1);
+
+        expect(hb.startIndex()).toBe(0);
+        expect(hb.lastIndex()).toBe(0);
+    });
+
+    it('startIndex and lastIndex methods work for an overflowed buffer', function () {
+        var hb = new HistoryBuffer(4, 1);
+
+        hb.appendArray([1, 2, 3, 4, 5, 6, 7]);
+
+        expect(hb.startIndex()).toBe(3);
+        expect(hb.lastIndex()).toBe(7);
+    });
+
+
     it('has an appendArray method', function () {
         var hb = new HistoryBuffer(10);
 
@@ -104,7 +130,7 @@ describe('A HistoryBuffer works with numeric data', function () {
         expect(hb.toArray()).toEqual([[1, 2], [2, 3], [3, 4]]);
     });
 
-    it('stringify method works for plots with a single data serie', function () {
+    it('stringify method works for plots with a single data series', function () {
         var hb = new HistoryBuffer(10);
 
         hb.appendArray([1, 2, 3]);
@@ -118,7 +144,7 @@ describe('A HistoryBuffer works with numeric data', function () {
         expect(serializedHb['count']).toBe(3);
         expect(serializedHb['data']).toEqual([1,2,3]);
     });
-    
+
     it('stringify method works for plots with multiple data series', function () {
         var hb = new HistoryBuffer(10, 3);
 

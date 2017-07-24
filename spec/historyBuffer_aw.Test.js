@@ -141,6 +141,38 @@ describe('An analogWaveform History Buffer', function () {
         expect(hb.toDataSeries(0)).toEqual([[4, 1], [5, 2], [6, 3], [null, null], [1, 1], [2, 2], [3, 3]]);
     });
 
+    it('stringify method works for plots with a single data series', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        hb.appendArray([aw, aw1]);
+
+        var serializedHb = JSON.parse(JSON.stringify(hb));
+
+        expect(serializedHb['width']).toBe(1);
+        expect(serializedHb['startIndex']).toBe(0);
+        expect(serializedHb['capacity']).toBe(10);
+        expect(serializedHb['valueType']).toBe('HistoryBuffer');
+        expect(serializedHb['count']).toBe(2);
+        // TODO fix serialization of data waveforms
+        //expect(serializedHb['data']).toEqual([1,2,3]);
+    });
+
+    it('stringify method works for plots with multiple data series', function () {
+        var hb = new HistoryBufferWaveform(10, 3);
+
+        hb.appendArray([[aw, aw1], [aw2, aw3]]);
+
+        var serializedHb = JSON.parse(JSON.stringify(hb));
+
+        expect(serializedHb['width']).toBe(3);
+        expect(serializedHb['startIndex']).toBe(0);
+        expect(serializedHb['capacity']).toBe(10);
+        expect(serializedHb['valueType']).toBe('HistoryBuffer');
+        expect(serializedHb['count']).toBe(2);
+        // TODO fix serialization of data waveforms
+
+        //expect(serializedHb['data']).toEqual([[1, 11], [2, 22], [3, 33]]);
+    });
 
     describe('onChange notification', function () {
         it('has an onChange method', function () {

@@ -74,8 +74,8 @@ describe('A HistoryBuffer', function () {
 
         hb.appendArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
 
-        expect(hb.query(10, 11, 1)).toEqual([10, 10]);
-        expect(hb.query(0, 3, 1)).toEqual([2, 2]);
+        expect(hb.query(10, 10, 1)).toEqual([10, 10]);
+        expect(hb.query(0, 2, 1)).toEqual([2, 2]);
     });
 
     it('returns a decimated data series for big buffers', function () {

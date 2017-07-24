@@ -32,6 +32,51 @@ describe('A chart', function () {
         expect(plot.getData()[0].datapoints.points).toEqual([0, 33]);
     });
 
+    it('works with an empty historyBuffer', function () {
+        var hb = new HistoryBuffer(10, 1);
+        plot = $.plot(placeholder, [{}], {
+            series: {
+                historyBuffer: hb
+            }
+        });
+
+        expect(plot.getData()[0].datapoints.points).toEqual([]);
+    });
+
+    it('works with an small amount of data in the historyBuffer', function () {
+        var hb = new HistoryBuffer(10, 1);
+
+        hb.push(33);
+        hb.push(34);
+
+        plot = $.plot(placeholder, [{}], {
+            series: {
+                historyBuffer: hb
+            }
+        });
+
+        expect(plot.getData()[0].datapoints.points).toEqual([0, 33, 1, 34]);
+    });
+
+    it('provides enough points to cover the visible range', function () {
+        var hb = new HistoryBuffer(10, 1);
+
+        hb.appendArray([33, 34, 35, 36, 37]);
+
+        plot = $.plot(placeholder, [{}], {
+            series: {
+                historyBuffer: hb
+            },
+            xaxes: [{
+                min: 1.5,
+                max: 2.5,
+                autoscale: 'none'
+            }]
+        });
+
+        expect(plot.getData()[0].datapoints.points).toEqual([1, 34, 2, 35, 3, 36]);
+    });
+
     it('keeps track of the total number of elements introduced in the buffer', function () {
         var hb = new HistoryBuffer(1, 1);
         hb.push(33);
@@ -52,10 +97,10 @@ describe('A chart', function () {
                     historyBuffer: firstHistoryBuffer
                 },
                 xaxes: [
-                    { position: 'bottom', autoScale: 'exact' }
+                    { position: 'bottom', autoscale: 'exact' }
                 ],
                 yaxes: [
-                    { position: 'left', autoScale: 'exact' }
+                    { position: 'left', autoscale: 'exact' }
                 ]
             };
         firstHistoryBuffer.push(10);
