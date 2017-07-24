@@ -153,7 +153,7 @@ The common charting operations performed on a history buffer are
     /** **toDataSeries()** - returns the content of the history buffer into a
     flot data series*/
     HistoryBuffer.prototype.toDataSeries = function (index) {
-        return this.hb.toDataSeries();
+        return this.hb.toDataSeries(index);
     };
 
     HistoryBuffer.prototype.onChange = function (f) {

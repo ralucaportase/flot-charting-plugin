@@ -130,6 +130,23 @@ describe('A HistoryBuffer works with numeric data', function () {
         expect(hb.toArray()).toEqual([[1, 2], [2, 3], [3, 4]]);
     });
 
+    it('has a toDataSeries method', function () {
+        var hb = new HistoryBuffer(10);
+
+        hb.appendArray([1, 2, 3]);
+
+        expect(hb.toDataSeries()).toEqual([[ 0, 1 ], [ 1, 2 ], [ 2, 3 ]]);
+    });
+
+    it('toDataSeries method works for plots with two data series', function () {
+        var hb = new HistoryBuffer(10, 2);
+
+        hb.appendArray([[1, 2], [2, 3], [3, 4]]);
+
+        expect(hb.toDataSeries(0)).toEqual([[ 0, 1 ], [ 1, 2 ], [ 2, 3 ]]);
+        expect(hb.toDataSeries(1)).toEqual([[ 0, 2 ], [ 1, 3 ], [ 2, 4 ]]);
+    });
+
     it('stringify method works for plots with a single data series', function () {
         var hb = new HistoryBuffer(10);
 
@@ -282,7 +299,7 @@ describe('A History Buffer works with analogWaveform data', function () {
             Y:[4, 3, 2]
         });
 
-        aw2 = new NIAnalogWaveform({
+        aw3 = new NIAnalogWaveform({
             t0: 10,
             dt: 1,
             Y:[0, 1, 2]
@@ -410,6 +427,14 @@ describe('A History Buffer works with analogWaveform data', function () {
         expect(hb.toDataSeries(0)).toEqual([[4, 1], [5, 2], [6, 3], [null, null], [1, 1], [2, 2], [3, 3]]);
     });
 
+    it('toDataSeries method works for history buffers with width > 1', function () {
+        var hb = analogWaveformHB(10,2);
+
+        hb.appendArray([[aw, aw2], [aw1, aw3]]);
+
+        expect(hb.toDataSeries(0)).toEqual([[4, 1], [5, 2], [6, 3], [null, null], [1, 1], [2, 2], [3, 3]]);
+        expect(hb.toDataSeries(1)).toEqual([[8, 4], [9, 3], [10, 2], [null, null], [10, 0], [11, 1],[12, 2]]);
+    });
 
     describe('onChange notification', function () {
         it('has an onChange method', function () {
