@@ -328,7 +328,7 @@ The common charting operations performed on a history buffer are
     /** **range( index)** - returns the range of the data in the buffer*/
     HistoryBufferNumeric.prototype.range = function (index) {
         var start = this.startIndex(),
-            end = this.lastIndex();
+            end = this.lastIndex()-1;
 
         if (index === undefined) {
             index = 0;
@@ -344,7 +344,7 @@ The common charting operations performed on a history buffer are
         if (data.length > 0) {
             var res = {
                 xmin: start,
-                xmax: end-1,
+                xmax: end,
                 ymin: Infinity,
                 ymax: -Infinity
             };
