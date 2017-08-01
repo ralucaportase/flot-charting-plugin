@@ -244,7 +244,7 @@ console.log(hb1.toDataSeries()); //[[4, 1], [5, 2], [6, 3], [null, null], [1, 1]
 
     HistoryBufferWaveform.prototype.toJSON = function() {
         var serializedHb = {
-            data: [],
+            data: this.toArray(),
             width: this.width,
             capacity: this.capacity,
             valueType: 'HistoryBuffer',

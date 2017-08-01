@@ -271,7 +271,7 @@ describe('A HistoryBuffer works with numeric data', function () {
 
 describe('A History Buffer works with analogWaveform data', function () {
     'use strict';
-    var aw, aw1, aw2, aw3;
+    var aw, aw1, aw2, aw3, serializedHb;
 
     function analogWaveformHB(capacity, width) {
         var hb = new HistoryBuffer(capacity, width);
@@ -304,6 +304,15 @@ describe('A History Buffer works with analogWaveform data', function () {
             dt: 1,
             Y:[0, 1, 2]
         });
+
+        serializedHb = {
+            data: [[aw, aw1], [aw2, aw3]],
+            width: 2,
+            capacity: 10,
+            valueType: 'HistoryBuffer',
+            startIndex: 0,
+            count: 2
+        };
     });
 
     it('has a setter and getter for count', function () {
@@ -409,6 +418,14 @@ describe('A History Buffer works with analogWaveform data', function () {
         hb.appendArray([aw, aw1]);
 
         expect(hb.toArray()).toEqual([aw, aw1]);
+    });
+
+    it('has a toJSON method', function () {
+        var hb = analogWaveformHB(10, 2);
+
+        hb.appendArray([[aw, aw1], [aw2,aw3]]);
+
+        expect(hb.toJSON()).toEqual(serializedHb);
     });
 
     it('toArray method works for plots with two data series', function () {
