@@ -65,6 +65,30 @@ describe('A chart', function () {
         expect(plot.getData()[0].datapoints.points).toEqual([4, 1, 5, 2, 6, 3, null, null, 1, 1, 2, 2, 3, 3]);
     });
 
+    it('works with analogWaveforms in which the t0 is passed as a serialized string', function () {
+        var hb = new HistoryBufferWaveform(10, 1);
+
+        hb.push(new NIAnalogWaveform({
+            t0: '4:0',
+            dt: 1,
+            Y:[1, 2, 3]})
+        );
+
+        hb.push(new NIAnalogWaveform({
+            t0: '1:0',
+            dt: 1,
+            Y:[1, 2, 3]})
+        );
+
+        plot = $.plot(placeholder, [{}], {
+            series: {
+                historyBuffer: hb
+            }
+        });
+
+        expect(plot.getData()[0].datapoints.points).toEqual([4, 1, 5, 2, 6, 3, null, null, 1, 1, 2, 2, 3, 3]);
+    });
+
     it('provides enough points to cover the visible range when working with analogWaveforms', function () {
         var hb = new HistoryBufferWaveform(10, 1);
 

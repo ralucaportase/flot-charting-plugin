@@ -92,8 +92,10 @@ console.log(hb1.toDataSeries()); //[[4, 1], [5, 2], [6, 3], [null, null], [1, 1]
             return false;
         }
 
-        var waveformStart = 0 + aw.t0;
-        var waveformEnd = 0 + aw.t0 + aw.Y.length * aw.dt;
+        var t0 = new NITimestamp(aw.t0);
+
+        var waveformStart = 0 + t0;
+        var waveformEnd = 0 + t0 + aw.Y.length * aw.dt;
 
         if (waveformStart < start && waveformEnd < start) {
             return false;
@@ -193,6 +195,7 @@ console.log(hb1.toDataSeries()); //[[4, 1], [5, 2], [6, 3], [null, null], [1, 1]
         function updateMinMax(aw) {
             var startTS, endTS
             var Y = aw.Y;
+            var t0 = new NITimestamp(aw.t0);
 
             if (Y.length === 0) {
                 return;
@@ -208,8 +211,8 @@ console.log(hb1.toDataSeries()); //[[4, 1], [5, 2], [6, 3], [null, null], [1, 1]
                 }
             }
 
-            startTS = 0 + aw.t0;
-            endTS = 0 + (new NITimestamp(aw.t0)).add(aw.dt * aw.Y.length);
+            startTS = 0 + t0;
+            endTS = 0 + (new NITimestamp(t0)).add(aw.dt * aw.Y.length);
 
             if (startTS < minTS) {
                 minTS = startTS;
