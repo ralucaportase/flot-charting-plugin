@@ -186,4 +186,59 @@ describe('A chart', function () {
             done();
         });
     });
+
+    describe('visible range ', function () {
+        it('updates OY axis datamin and datamax', function () {
+            var hb = new HistoryBuffer(10, 1);
+
+            hb.appendArray([37, 35, 34, 32, 33]);
+
+            plot = $.plot(placeholder, [{}], {
+                series: {
+                    historyBuffer: hb
+                },
+                xaxes: [{
+                    min: 1.5,
+                    max: 2.5,
+                    autoscale: 'none'
+                }],
+                yaxis: {
+                    autoscale: 'exact'
+                }
+            });
+
+            expect(plot.getData()[0].datapoints.points).toEqual([1, 35, 2, 34, 3, 32]);
+            var yaxis = plot.getYAxes()[0];
+            expect(yaxis.datamin).toEqual(32);
+            expect(yaxis.datamax).toEqual(35);
+            expect(yaxis.autoscaledMin).toEqual(32);
+            expect(yaxis.autoscaledMax).toEqual(35);
+        });
+
+        it('scales for multiple dataseries', function () {
+            var hb = new HistoryBuffer(20, 2);
+
+            hb.appendArray([[10, 2], [11, 3], [12, 4], [13, 5], [14, 6]]);
+
+            plot = $.plot(placeholder, [[],[]], {
+                series: {
+                    historyBuffer: hb
+                },
+                xaxes: [{
+                    min: 1.5,
+                    max: 2.5,
+                    autoscale: 'none'
+                }],
+                yaxis: {
+                    autoscale: 'exact'
+                }
+            });
+
+            expect(plot.getData()[0].datapoints.points).toEqual([1, 11, 2, 12, 3, 13]);
+            expect(plot.getData()[1].datapoints.points).toEqual([1, 3, 2, 4, 3, 5]);
+            var yaxis = plot.getYAxes()[0];
+            expect(yaxis.datamin).toEqual(3);
+            expect(yaxis.datamax).toEqual(13);
+        });
+      });
 });

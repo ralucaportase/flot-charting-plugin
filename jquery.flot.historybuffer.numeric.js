@@ -330,7 +330,19 @@ The common charting operations performed on a history buffer are
         var start = this.startIndex(),
             end = this.lastIndex()-1;
 
-        if (index === undefined) {
+        return this.rangeY(start, end, index);
+    };
+
+    /** **rangeY(start, end, index)** - returns the range of the data
+    in a given interval of the buffer*/
+    HistoryBufferNumeric.prototype.rangeY = function (start, end, index) {
+        if (start === null || start === undefined){
+            start = this.startIndex();
+        }
+        if (end === null || end === undefined){
+            end = this.lastIndex()-1;
+        }
+        if (index === null || index === undefined) {
             index = 0;
         }
 
@@ -339,9 +351,10 @@ The common charting operations performed on a history buffer are
             this.changed = false;
         }
 
-        var data = this.query(start, end, end - start, index);
+        var data = this.query(start, end, end - start, index),
+            dataLength = data.length;
 
-        if (data.length > 0) {
+        if (dataLength > 0) {
             var res = {
                 xmin: start,
                 xmax: end,
@@ -349,7 +362,7 @@ The common charting operations performed on a history buffer are
                 ymax: -Infinity
             };
 
-            for (var i = 0; i < data.length; i+=2) {
+            for (var i = 0; i < dataLength; i+=2) {
                 res.ymin = Math.min(res.ymin, data[i+1]);
                 res.ymax = Math.max(res.ymax, data[i+1]);
             }

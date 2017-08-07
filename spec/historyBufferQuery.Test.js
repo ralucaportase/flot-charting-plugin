@@ -13,6 +13,12 @@ describe('A HistoryBuffer', function () {
         expect(hb.range).toEqual(jasmine.any(Function));
     });
 
+    it('has a rangeY method', function () {
+        var hb = new HistoryBuffer(10);
+
+        expect(hb.rangeY).toEqual(jasmine.any(Function));
+    });
+
     it('has basic query capabilities', function () {
         var hb = new HistoryBuffer(10);
 
@@ -27,6 +33,22 @@ describe('A HistoryBuffer', function () {
         hb.push(5);
 
         expect(hb.range(0)).toEqual({xmin:0, xmax: 0, ymin: 5, ymax: 5});
+    });
+
+    it('has basic rangeY capabilities', function () {
+        var hb = new HistoryBuffer(10);
+
+        hb.appendArray([2, 5, 4, 6]);
+
+        expect(hb.rangeY(1,2,0)).toEqual({xmin:1, xmax: 2, ymin: 4, ymax: 5});
+    });
+
+    it('works with empty parameters for rangeY', function () {
+        var hb = new HistoryBuffer(10);
+
+        hb.appendArray([2, 5, 4, 6]);
+
+        expect(hb.rangeY(null, null, null)).toEqual({xmin:0, xmax: 3, ymin: 2, ymax: 6});
     });
 
     it('has basic query capabilities for buffers with multiple data series', function () {

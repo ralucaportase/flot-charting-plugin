@@ -6,7 +6,7 @@
 describe('A HistoryBufferWaveform', function () {
     'use strict';
 
-    var aw, aw1, aw2, aw3, empty_aw;
+    var aw, aw1, aw2, aw3, aw4, empty_aw;
 
     beforeEach(function () {
         aw = new NIAnalogWaveform({
@@ -27,10 +27,16 @@ describe('A HistoryBufferWaveform', function () {
             Y:[4, 3, 2]
         });
 
-        aw2 = new NIAnalogWaveform({
+        aw3 = new NIAnalogWaveform({
             t0: 10,
             dt: 1,
             Y:[0, 1, 2]
+        });
+
+        aw4 = new NIAnalogWaveform({
+            t0: 1,
+            dt: 1,
+            Y:[1, 2, 3, 4, 5, 6, 7]
         });
 
         empty_aw = new NIAnalogWaveform({
@@ -46,6 +52,18 @@ describe('A HistoryBufferWaveform', function () {
         expect(hb.query).toEqual(jasmine.any(Function));
     });
 
+    it('has a range method', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        expect(hb.range).toEqual(jasmine.any(Function));
+    });
+
+    it('has a rangeY method', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        expect(hb.rangeY).toEqual(jasmine.any(Function));
+    });
+
     it('has basic query capabilities', function () {
         var hb = new HistoryBufferWaveform(10);
 
@@ -54,12 +72,56 @@ describe('A HistoryBufferWaveform', function () {
         expect(hb.query(0, 10, 1)).toEqual([4, 1, 5, 2, 6, 3]);
     });
 
+    it('has basic range capabilities', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        hb.push(aw4);
+
+        expect(hb.range(0)).toEqual({xmin:1, xmax: 8, ymin: 1, ymax: 7});
+    });
+
+    it('has basic rangeY capabilities', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        hb.push(aw4);
+
+        expect(hb.rangeY(3, 5, 0)).toEqual({xmin:3, xmax: 5, ymin: 3, ymax: 5});
+    });
+
+    it('works with empty parameters for range', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        hb.push(aw4);
+
+        expect(hb.rangeY()).toEqual({xmin:1, xmax: 8, ymin: 1, ymax: 7});
+    });
+
+    it('works with empty parameters for rangeY', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        hb.push(aw4);
+
+        expect(hb.rangeY(null, null, null)).toEqual({xmin:1, xmax: 8, ymin: 1, ymax: 7});
+    });
+
     it('can deal with empty waveforms', function () {
         var hb = new HistoryBufferWaveform(10);
 
         hb.appendArray([aw, empty_aw, aw1]);
 
         expect(hb.query(0, 10, 1)).toEqual([4, 1, 5, 2, 6, 3, null, null, 1, 1, 2, 2, 3, 3]);
+    });
+
+    it('returns empty range when querying an empty history Buffer', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        expect(hb.range()).toEqual({});
+    });
+
+    it('returns empty rangeY when querying an empty history Buffer', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        expect(hb.rangeY()).toEqual({});
     });
 
     it('has basic query capabilities for buffers with multiple data series', function () {

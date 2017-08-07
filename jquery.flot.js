@@ -898,6 +898,7 @@ Licensed under the MIT license.
                 processDatapoints: [],
                 processOffset: [],
                 adjustSeriesDataRange: [],
+                setRange: [],
                 drawBackground: [],
                 drawSeries: [],
                 drawAxis: [],

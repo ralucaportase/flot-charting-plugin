@@ -189,39 +189,10 @@ console.log(hb1.toDataSeries()); //[[4, 1], [5, 2], [6, 3], [null, null], [1, 1]
     };
 
     HistoryBufferWaveform.prototype.range = function (index) {
-        var minTS = Infinity, maxTS = -Infinity,
-            min = Infinity, max= -Infinity;
-
-        function updateMinMax(aw) {
-            var startTS, endTS
-            var Y = aw.Y;
-            var t0 = new NITimestamp(aw.t0);
-
-            if (Y.length === 0) {
-                return;
-            }
-
-            for (var i = 0; i < Y.length; i++) {
-                if (Y[i] > max) {
-                    max = Y[i];
-                }
-
-                if (Y[i] < min) {
-                    min = Y[i];
-                }
-            }
-
-            startTS = 0 + t0;
-            endTS = 0 + (new NITimestamp(t0)).add(aw.dt * aw.Y.length);
-
-            if (startTS < minTS) {
-                minTS = startTS;
-            }
-
-            if (endTS > maxTS) {
-                maxTS = endTS;
-            }
-        }
+        var minMax = { minTS : Infinity,
+                    maxTS : -Infinity,
+                    min : Infinity,
+                    max : -Infinity}
 
         if (index === undefined) {
             index = 0;
@@ -234,16 +205,96 @@ console.log(hb1.toDataSeries()); //[[4, 1], [5, 2], [6, 3], [null, null], [1, 1]
         }
 
         waveforms.forEach(function (waveform) {
-            updateMinMax(waveform);
+            updateMinMax(waveform, minMax);
         });
 
         return {
-            xmin: minTS,
-            xmax: maxTS,
-            ymin: min,
-            ymax: max
+            xmin: minMax.minTS,
+            xmax: minMax.maxTS,
+            ymin: minMax.min,
+            ymax: minMax.max
         }
     };
+
+    HistoryBufferWaveform.prototype.rangeY = function (start, end, index) {
+        var minMax = { minTS : Infinity,
+                      maxTS : -Infinity,
+                      min : Infinity,
+                      max : -Infinity}
+
+        if (index === null || index === undefined) {
+            index = 0;
+        }
+
+        var waveforms = this.buffers[index].toArray();
+
+        if (waveforms.length === 0) {
+            return {};
+        }
+
+        if (start === null || start === undefined){
+            start = 0 + new NITimestamp(waveforms[0].t0);
+        }
+        if (end === null || end === undefined){
+            var aw = waveforms[waveforms.length - 1];
+            end =  0 + new NITimestamp(aw.t0).add(aw.dt * aw.Y.length);
+        }
+
+        waveforms.forEach(function (waveform) {
+            updateMinMax(waveform, minMax, start, end);
+        });
+
+        var xmin = start ? start : minMax.minTS,
+            xmax = end ? end : minMax.maxTS;
+
+        return {
+            xmin: xmin,
+            xmax: xmax,
+            ymin: minMax.min,
+            ymax: minMax.max
+        }
+
+    }
+
+    function updateMinMax(aw, minMax, start, end) {
+        var startTS, endTS, t,
+            Y = aw.Y,
+            t0 = new NITimestamp(aw.t0);
+
+        if (Y.length === 0) {
+            return;
+        }
+
+        startTS = 0 + t0;
+        endTS = 0 + (new NITimestamp(t0)).add(aw.dt * aw.Y.length);
+
+        if (start !== undefined && end !== undefined && (startTS > end || endTS < start)) {
+            return;
+        }
+
+        for (var i = 0; i < Y.length; i++) {
+            t = 0 + (new NITimestamp(t0)).add(aw.dt * i);
+            if (start && end && (t < start || t > end)) {
+                continue;
+            }
+
+            if (Y[i] > minMax.max) {
+                minMax.max = Y[i];
+            }
+
+            if (Y[i] < minMax.min) {
+                minMax.min = Y[i];
+            }
+        }
+        if (startTS < minMax.minTS) {
+            minMax.minTS = startTS;
+        }
+
+        if (endTS > minMax.maxTS) {
+            minMax.maxTS = endTS;
+        }
+    }
+
 
     HistoryBufferWaveform.prototype.toJSON = function() {
         var serializedHb = {
