@@ -167,9 +167,9 @@ The common charting operations performed on a history buffer are
         return this.hb.query(start, end, step, index);
     };
 
-    /** **range(index)** - returns the range of the data in the buffer */
-    HistoryBuffer.prototype.range = function (index) {
-        return this.hb.range(index);
+    /** **rangeX(index)** - returns the range of the data in the buffer */
+    HistoryBuffer.prototype.rangeX = function (index) {
+        return this.hb.rangeX(index);
     };
 
     /** **rangeY(start, end, index)** - returns the range of the data

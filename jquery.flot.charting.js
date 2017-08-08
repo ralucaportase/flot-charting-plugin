@@ -40,7 +40,7 @@ Licensed under the MIT license.
     }
 
     function dataRange(historyBuffer, index) {
-        var data = historyBuffer.range(index);
+        var data = historyBuffer.rangeX(index);
         var result = [];
 
         if (data.xmin === undefined || data.xmax === undefined) {
@@ -49,8 +49,8 @@ Licensed under the MIT license.
 
         result[0] = data.xmin;
         result[2] = data.xmax;
-        result[1] = data.ymin;
-        result[3] = data.ymax;
+        result[1] = 0;
+        result[3] = 1;
 
         return result;
     }

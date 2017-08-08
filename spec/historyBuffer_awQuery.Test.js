@@ -52,10 +52,10 @@ describe('A HistoryBufferWaveform', function () {
         expect(hb.query).toEqual(jasmine.any(Function));
     });
 
-    it('has a range method', function () {
+    it('has a rangeX method', function () {
         var hb = new HistoryBufferWaveform(10);
 
-        expect(hb.range).toEqual(jasmine.any(Function));
+        expect(hb.rangeX).toEqual(jasmine.any(Function));
     });
 
     it('has a rangeY method', function () {
@@ -72,12 +72,12 @@ describe('A HistoryBufferWaveform', function () {
         expect(hb.query(0, 10, 1)).toEqual([4, 1, 5, 2, 6, 3]);
     });
 
-    it('has basic range capabilities', function () {
+    it('has basic rangeX capabilities', function () {
         var hb = new HistoryBufferWaveform(10);
 
         hb.push(aw4);
 
-        expect(hb.range(0)).toEqual({xmin:1, xmax: 8, ymin: 1, ymax: 7});
+        expect(hb.rangeX(0)).toEqual({xmin:1, xmax: 8});
     });
 
     it('has basic rangeY capabilities', function () {
@@ -85,15 +85,15 @@ describe('A HistoryBufferWaveform', function () {
 
         hb.push(aw4);
 
-        expect(hb.rangeY(3, 5, 0)).toEqual({xmin:3, xmax: 5, ymin: 3, ymax: 5});
+        expect(hb.rangeY(3, 5, 0)).toEqual({ymin: 3, ymax: 5});
     });
 
-    it('works with empty parameters for range', function () {
+    it('works with empty parameters for rangeX', function () {
         var hb = new HistoryBufferWaveform(10);
 
         hb.push(aw4);
 
-        expect(hb.rangeY()).toEqual({xmin:1, xmax: 8, ymin: 1, ymax: 7});
+        expect(hb.rangeX()).toEqual({xmin:1, xmax: 8});
     });
 
     it('works with empty parameters for rangeY', function () {
@@ -101,7 +101,7 @@ describe('A HistoryBufferWaveform', function () {
 
         hb.push(aw4);
 
-        expect(hb.rangeY(null, null, null)).toEqual({xmin:1, xmax: 8, ymin: 1, ymax: 7});
+        expect(hb.rangeY(null, null, null)).toEqual({ymin: 1, ymax: 7});
     });
 
     it('can deal with empty waveforms', function () {
@@ -112,10 +112,10 @@ describe('A HistoryBufferWaveform', function () {
         expect(hb.query(0, 10, 1)).toEqual([4, 1, 5, 2, 6, 3, null, null, 1, 1, 2, 2, 3, 3]);
     });
 
-    it('returns empty range when querying an empty history Buffer', function () {
+    it('returns empty rangeX when querying an empty history Buffer', function () {
         var hb = new HistoryBufferWaveform(10);
 
-        expect(hb.range()).toEqual({});
+        expect(hb.rangeX()).toEqual({});
     });
 
     it('returns empty rangeY when querying an empty history Buffer', function () {

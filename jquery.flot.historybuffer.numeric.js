@@ -325,12 +325,18 @@ The common charting operations performed on a history buffer are
         return this.trees[index].query(start, end, step);
     };
 
-    /** **range( index)** - returns the range of the data in the buffer*/
-    HistoryBufferNumeric.prototype.range = function (index) {
+    /** **rangeX( index)** - returns the range of the data in the buffer*/
+    HistoryBufferNumeric.prototype.rangeX = function (index) {
         var start = this.startIndex(),
             end = this.lastIndex()-1;
 
-        return this.rangeY(start, end, index);
+        if (end === start - 1) {
+            return {};
+        }
+
+        return { xmin: start,
+                 xmax: end
+               };
     };
 
     /** **rangeY(start, end, index)** - returns the range of the data
@@ -356,8 +362,6 @@ The common charting operations performed on a history buffer are
 
         if (dataLength > 0) {
             var res = {
-                xmin: start,
-                xmax: end,
                 ymin: Infinity,
                 ymax: -Infinity
             };
