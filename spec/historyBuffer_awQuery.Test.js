@@ -7,40 +7,43 @@ describe('A HistoryBufferWaveform', function () {
     'use strict';
 
     var aw, aw1, aw2, aw3, aw4, empty_aw;
+    var utc = new Date(Date.UTC(1, 0, 1, 0, 0, 0));
+    utc.setUTCFullYear(1);
+    var TimeZero = new NITimestamp(utc);
 
     beforeEach(function () {
         aw = new NIAnalogWaveform({
-            t0: 4,
+            t0: TimeZero + 4,
             dt: 1,
             Y:[1, 2, 3]
         });
 
         aw1 = new NIAnalogWaveform({
-            t0: 1,
+            t0: TimeZero + 1,
             dt: 1,
             Y:[1, 2, 3]
         });
 
         aw2 = new NIAnalogWaveform({
-            t0: 8,
+            t0: TimeZero + 8,
             dt: 1,
             Y:[4, 3, 2]
         });
 
         aw3 = new NIAnalogWaveform({
-            t0: 10,
+            t0: TimeZero + 10,
             dt: 1,
             Y:[0, 1, 2]
         });
 
         aw4 = new NIAnalogWaveform({
-            t0: 1,
+            t0: TimeZero + 1,
             dt: 1,
             Y:[1, 2, 3, 4, 5, 6, 7]
         });
 
         empty_aw = new NIAnalogWaveform({
-            t0: 10,
+            t0: TimeZero + 10,
             dt: 1,
             Y:[]
         });
@@ -145,7 +148,7 @@ describe('A HistoryBufferWaveform', function () {
     it('returns partial data when querying an interval that fits inside an analogWaveform', function () {
         var hb = new HistoryBufferWaveform(10);
         var largeAW = new NIAnalogWaveform({
-            t0: 1,
+            t0: TimeZero + 1,
             dt: 0.5,
             Y:[0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
         });

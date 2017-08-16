@@ -272,6 +272,10 @@ describe('A HistoryBuffer works with numeric data', function () {
 describe('A History Buffer works with analogWaveform data', function () {
     'use strict';
     var aw, aw1, aw2, aw3, serializedHb;
+    var utc = new Date(Date.UTC(1, 0, 1, 0, 0, 0));
+    utc.setUTCFullYear(1);
+    var TimeZero = new NITimestamp(utc);
+
 
     function analogWaveformHB(capacity, width) {
         var hb = new HistoryBuffer(capacity, width);
@@ -282,25 +286,25 @@ describe('A History Buffer works with analogWaveform data', function () {
 
     beforeEach(function () {
         aw = new NIAnalogWaveform({
-            t0: 4,
+            t0: TimeZero + 4,
             dt: 1,
             Y:[1, 2, 3]
         });
 
         aw1 = new NIAnalogWaveform({
-            t0: 1,
+            t0: TimeZero + 1,
             dt: 1,
             Y:[1, 2, 3]
         });
 
         aw2 = new NIAnalogWaveform({
-            t0: 8,
+            t0: TimeZero + 8,
             dt: 1,
             Y:[4, 3, 2]
         });
 
         aw3 = new NIAnalogWaveform({
-            t0: 10,
+            t0: TimeZero + 10,
             dt: 1,
             Y:[0, 1, 2]
         });

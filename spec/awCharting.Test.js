@@ -7,20 +7,24 @@ describe('A chart', function () {
 
     var plot;
     var placeholder;
+    var utc = new Date(Date.UTC(1, 0, 1, 0, 0, 0));
+    utc.setUTCFullYear(1);
+    var TimeZero = new NITimestamp(utc);
+
     var aw = new NIAnalogWaveform({
-        t0: 4,
+        t0: TimeZero + 4,
         dt: 1,
         Y:[1, 2, 3]
     });
 
     var aw1 = new NIAnalogWaveform({
-        t0: 1,
+        t0: TimeZero + 1,
         dt: 1,
         Y:[1, 2, 3]
     });
 
     var aw2 = new NIAnalogWaveform({
-        t0: 1,
+        t0: TimeZero + 1,
         dt: 1,
         Y:[1, 2, 3, 4, 5]
     });
@@ -69,13 +73,13 @@ describe('A chart', function () {
         var hb = new HistoryBufferWaveform(10, 1);
 
         hb.push(new NIAnalogWaveform({
-            t0: '4:0',
+            t0: (TimeZero + 4) + ':0',
             dt: 1,
             Y:[1, 2, 3]})
         );
 
         hb.push(new NIAnalogWaveform({
-            t0: '1:0',
+            t0: (TimeZero + 1) + ':0',
             dt: 1,
             Y:[1, 2, 3]})
         );
