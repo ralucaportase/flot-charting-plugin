@@ -144,6 +144,23 @@ describe('A HistoryBufferNumeric', function () {
         expect(JSON.stringify(decimatedRes)).toEqual(JSON.stringify(query));
     });
 
+    it('gives the correct answer when the hb is full and querying a bigger range than the hb range', function () {
+        var hbSize = 1024;
+        var hb = new HistoryBufferNumeric(hbSize);
+
+        var arr = [];
+
+        for (var i = 0; i < 1024; i++) {
+            arr.push(i);
+        }
+
+        hb.appendArray(arr);
+
+        var query = hb.query(-1, 1100, 2000);
+
+        expect(query).toEqual([0, 0, 1023, 1023]);
+    });
+
     describe('Segment tree update', function () {
         it('recomputes the minmax for a one level tree on push', function () {
             var hb = new HistoryBufferNumeric(128);
