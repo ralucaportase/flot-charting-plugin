@@ -241,4 +241,36 @@ describe('A chart', function () {
             expect(yaxis.datamax).toEqual(13);
         });
       });
+
+      it('works for multiple dataseries with multiple Y axes', function () {
+          var hb = new HistoryBuffer(20, 2);
+
+          hb.appendArray([[10, 6], [11, 5], [12, 4], [13, 3], [14, 2]]);
+
+          plot = $.plot(placeholder, [{data:[]}, {data:[], yaxis: 2}], {
+              series: {
+                  historyBuffer: hb
+              },
+              xaxes: [{
+                  min: 1.5,
+                  max: 2.5,
+                  autoscale: 'none'
+              }],
+              yaxes: [{
+                  autoscale: 'exact'
+              }, {
+                  autoscale: 'exact'
+              }
+            ]
+          });
+
+          expect(plot.getData()[0].datapoints.points).toEqual([1, 11, 2, 12, 3, 13]);
+          expect(plot.getData()[1].datapoints.points).toEqual([1, 5, 2, 4, 3, 3]);
+          var yaxis = plot.getYAxes()[0];
+          var yaxis2 = plot.getYAxes()[1];
+          expect(yaxis.datamin).toEqual(11);
+          expect(yaxis.datamax).toEqual(13);
+          expect(yaxis2.datamin).toEqual(3);
+          expect(yaxis2.datamax).toEqual(5);
+      });
 });
