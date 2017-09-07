@@ -80,7 +80,7 @@ describe('A HistoryBufferWaveform', function () {
 
         hb.push(aw4);
 
-        expect(hb.rangeX(0)).toEqual({xmin:1, xmax: 8});
+        expect(hb.rangeX(0)).toEqual({xmin:1, xmax: 7, deltamin: 1});
     });
 
     it('has basic rangeY capabilities', function () {
@@ -96,7 +96,7 @@ describe('A HistoryBufferWaveform', function () {
 
         hb.push(aw4);
 
-        expect(hb.rangeX()).toEqual({xmin:1, xmax: 8});
+        expect(hb.rangeX()).toEqual({xmin:1, xmax: 7, deltamin: 1});
     });
 
     it('works with empty parameters for rangeY', function () {

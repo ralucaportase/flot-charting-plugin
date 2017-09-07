@@ -32,7 +32,7 @@ describe('A HistoryBuffer', function () {
 
         hb.appendArray([2, 5, 4, 6]);
 
-        expect(hb.rangeX(0)).toEqual({xmin:0, xmax: 3});
+        expect(hb.rangeX(0)).toEqual({xmin:0, xmax: 3, deltamin: 1});
     });
 
     it('has basic rangeY capabilities', function () {
@@ -66,8 +66,8 @@ describe('A HistoryBuffer', function () {
         hb.push([5, 6]);
         hb.push([15, 16]);
 
-        expect(hb.rangeX(0)).toEqual({xmin:0, xmax: 1});
-        expect(hb.rangeX(1)).toEqual({xmin:0, xmax: 1});
+        expect(hb.rangeX(0)).toEqual({xmin:0, xmax: 1, deltamin: 1});
+        expect(hb.rangeX(1)).toEqual({xmin:0, xmax: 1, deltamin: 1});
     });
 
     it('returns empty data series when querying an empty history Buffer', function () {

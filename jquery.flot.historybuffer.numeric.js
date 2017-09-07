@@ -335,7 +335,8 @@ The common charting operations performed on a history buffer are
         }
 
         return { xmin: start,
-                 xmax: end
+                 xmax: end,
+                 deltamin: 1
                };
     };
 

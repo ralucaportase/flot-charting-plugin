@@ -240,37 +240,218 @@ describe('A chart', function () {
             expect(yaxis.datamin).toEqual(3);
             expect(yaxis.datamax).toEqual(13);
         });
-      });
 
-      it('works for multiple dataseries with multiple Y axes', function () {
-          var hb = new HistoryBuffer(20, 2);
+        it('works for multiple dataseries with multiple Y axes', function () {
+            var hb = new HistoryBuffer(20, 2);
 
-          hb.appendArray([[10, 6], [11, 5], [12, 4], [13, 3], [14, 2]]);
+            hb.appendArray([[10, 6], [11, 5], [12, 4], [13, 3], [14, 2]]);
 
-          plot = $.plot(placeholder, [{data:[]}, {data:[], yaxis: 2}], {
-              series: {
-                  historyBuffer: hb
-              },
-              xaxes: [{
-                  min: 1.5,
-                  max: 2.5,
-                  autoscale: 'none'
-              }],
-              yaxes: [{
-                  autoscale: 'exact'
-              }, {
-                  autoscale: 'exact'
-              }
-            ]
-          });
+            plot = $.plot(placeholder, [{data:[]}, {data:[], yaxis: 2}], {
+                series: {
+                    historyBuffer: hb
+                },
+                xaxes: [{
+                    min: 1.5,
+                    max: 2.5,
+                    autoscale: 'none'
+                }],
+                yaxes: [{
+                    autoscale: 'exact'
+                }, {
+                    autoscale: 'exact'
+                }
+              ]
+            });
 
-          expect(plot.getData()[0].datapoints.points).toEqual([1, 11, 2, 12, 3, 13]);
-          expect(plot.getData()[1].datapoints.points).toEqual([1, 5, 2, 4, 3, 3]);
-          var yaxis = plot.getYAxes()[0];
-          var yaxis2 = plot.getYAxes()[1];
-          expect(yaxis.datamin).toEqual(11);
-          expect(yaxis.datamax).toEqual(13);
-          expect(yaxis2.datamin).toEqual(3);
-          expect(yaxis2.datamax).toEqual(5);
-      });
+            expect(plot.getData()[0].datapoints.points).toEqual([1, 11, 2, 12, 3, 13]);
+            expect(plot.getData()[1].datapoints.points).toEqual([1, 5, 2, 4, 3, 3]);
+            var yaxis = plot.getYAxes()[0];
+            var yaxis2 = plot.getYAxes()[1];
+            expect(yaxis.datamin).toEqual(11);
+            expect(yaxis.datamax).toEqual(13);
+            expect(yaxis2.datamin).toEqual(3);
+            expect(yaxis2.datamax).toEqual(5);
+        });
+    });
+
+    describe('with bars', function () {
+        it('sets barWidth to 0.8 for numeric buffer', function() {
+            var hb = new HistoryBuffer(20, 2);
+            hb.appendArray([[10, 2], [11, 3], [12, 4], [13, 5], [14, 6]]);
+
+            plot = $.plot(placeholder, [[],[]], {
+                series: {
+                    historyBuffer: hb,
+                    bars: {
+                        lineWidth: 1,
+                        show: true,
+                        fillColor: 'blue',
+                        barWidth: 10
+                    },
+                }
+            });
+
+            expect(plot.getData()[0].bars.barWidth).toBe(0.8);
+        });
+
+        it('should compute the barWidth based on minimum point distance for analogWaveform', function() {
+            var aw1 = new NIAnalogWaveform({
+                    t0: new NITimestamp() + 3,
+                    dt: 10,
+                    Y:[3, 5, 9]
+                }),
+                aw2 = new NIAnalogWaveform({
+                    t0: new NITimestamp() + 4,
+                    dt: 1,
+                    Y:[7, 11, 15]
+                }),
+                hb = new HistoryBufferWaveform(10);
+
+            hb.appendArray([aw1, aw2]);
+
+            plot = $.plot(placeholder, [[]], {
+                series: {
+                    historyBuffer: hb,
+                    bars: {
+                        lineWidth: 1,
+                        show: true,
+                        fillColor: 'blue',
+                        barWidth: 10
+                    },
+                }
+            });
+
+            expect(plot.getData()[0].bars.barWidth).toBe(0.8);
+        });
+
+        it('should work with multiple series of analogWaveform', function() {
+            var aw1 = new NIAnalogWaveform({
+                    t0: new NITimestamp() + 3,
+                    dt: 10,
+                    Y:[3, 5, 9]
+                }),
+                aw2 = new NIAnalogWaveform({
+                    t0: new NITimestamp() + 4,
+                    dt: 1,
+                    Y:[7, 11, 15]
+                }),
+                hb = new HistoryBufferWaveform(10, 2);
+
+            hb.push([aw1, aw2]);
+
+            plot = $.plot(placeholder, [[],[]], {
+                series: {
+                    historyBuffer: hb,
+                    bars: {
+                        lineWidth: 1,
+                        show: true,
+                        fillColor: 'blue',
+                        barWidth: 10
+                    },
+                }
+            });
+
+            expect(plot.getData()[0].bars.barWidth).toBe(8);
+            expect(plot.getData()[1].bars.barWidth).toBe(0.8);
+        });
+
+        it('should consider barWidth 0.8 * dt for empty analogWaveform', function() {
+            var empty_aw = new NIAnalogWaveform({
+                    t0: new NITimestamp() + 10,
+                    dt: 1,
+                    Y:[]
+                }),
+                hb = new HistoryBufferWaveform(10);
+
+            hb.appendArray([empty_aw]);
+
+            plot = $.plot(placeholder, [[],[]], {
+                series: {
+                    historyBuffer: hb,
+                    bars: {
+                        lineWidth: 1,
+                        show: true,
+                        fillColor: 'blue',
+                        barWidth: 10
+                    },
+                }
+            });
+
+            expect(plot.getData()[0].bars.barWidth).toBe(0.8);
+        });
+
+        it('should work for an analogWaveform with a single point', function() {
+            var empty_aw = new NIAnalogWaveform({
+                    t0: new NITimestamp() + 10,
+                    dt: 100,
+                    Y:[1]
+                }),
+                hb = new HistoryBufferWaveform(10);
+
+            hb.appendArray([empty_aw]);
+
+            plot = $.plot(placeholder, [[],[]], {
+                series: {
+                    historyBuffer: hb,
+                    bars: {
+                        lineWidth: 1,
+                        show: true,
+                        fillColor: 'blue',
+                        barWidth: 10
+                    },
+                }
+            });
+
+            expect(plot.getData()[0].bars.barWidth).toBe(0.8);
+        });
+
+        it('should consider barWidth 0.8 for not defined dt of analogWaveform', function() {
+            var empty_aw = new NIAnalogWaveform({
+                    t0: new NITimestamp() + 10,
+                    Y:[2]
+                }),
+                hb = new HistoryBufferWaveform(10);
+
+            hb.appendArray([empty_aw]);
+
+            plot = $.plot(placeholder, [[],[]], {
+                series: {
+                    historyBuffer: hb,
+                    bars: {
+                        lineWidth: 1,
+                        show: true,
+                        fillColor: 'blue',
+                        barWidth: 10
+                    },
+                }
+            });
+
+            expect(plot.getData()[0].bars.barWidth).toBe(0.8);
+        });
+
+        it('should work with negative dt', function() {
+            var empty_aw = new NIAnalogWaveform({
+                    t0: new NITimestamp() + 10,
+                    dt: -1,
+                    Y:[2, 3, 4, 5]
+                }),
+                hb = new HistoryBufferWaveform(10);
+
+            hb.appendArray([empty_aw]);
+
+            plot = $.plot(placeholder, [[],[]], {
+                series: {
+                    historyBuffer: hb,
+                    bars: {
+                        lineWidth: 1,
+                        show: true,
+                        fillColor: 'blue',
+                        barWidth: 10
+                    },
+                }
+            });
+
+            expect(plot.getData()[0].bars.barWidth).toBe(0.8);
+        });
+    });
 });
