@@ -107,6 +107,20 @@ describe('A HistoryBufferWaveform', function () {
         expect(hb.rangeY(null, null, null)).toEqual({ymin: 1, ymax: 7});
     });
 
+    it('rangeY ignores NaN, null, undefined values', function () {
+        var hb = new HistoryBufferWaveform(10);
+
+        aw = new NIAnalogWaveform({
+            t0: TimeZero + 4,
+            dt: 1,
+            Y: [2, 5, NaN, null, undefined, 4, 6]
+        });
+
+        hb.push(aw);
+
+        expect(hb.rangeY(0, 10, 0)).toEqual({ymin: 2, ymax: 6});
+    });
+
     it('can deal with empty waveforms', function () {
         var hb = new HistoryBufferWaveform(10);
 

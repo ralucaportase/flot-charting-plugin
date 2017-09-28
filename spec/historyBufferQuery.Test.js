@@ -51,6 +51,14 @@ describe('A HistoryBuffer', function () {
         expect(hb.rangeY(null, null, null)).toEqual({ymin: 2, ymax: 6});
     });
 
+    it('rangeY ignores NaN, null and undefined values', function () {
+        var hb = new HistoryBuffer(10);
+
+        hb.appendArray([2, 5, null, NaN, undefined, 4, 6]);
+
+        expect(hb.rangeY(0, 10, 0)).toEqual({ymin: 2, ymax: 6});
+    });
+
     it('has basic query capabilities for buffers with multiple data series', function () {
         var hb = new HistoryBuffer(10, 2);
 

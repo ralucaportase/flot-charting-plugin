@@ -294,6 +294,10 @@ console.log(hb1.toDataSeries()); //[[4, 1], [5, 2], [6, 3], [null, null], [1, 1]
                 continue;
             }
 
+            if (Y[i] == null || Y[i] === Infinity || Y[i] === -Infinity || isNaN(Y[i])) {
+                continue;
+            }
+
             if (Y[i] > minMax.max) {
                 minMax.max = Y[i];
             }
