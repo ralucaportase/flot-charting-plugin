@@ -70,7 +70,7 @@ describe('A chart', function () {
             xaxes: [{
                 min: 1.5,
                 max: 2.5,
-                autoscale: 'none'
+                autoScale: 'none'
             }]
         });
 
@@ -97,10 +97,10 @@ describe('A chart', function () {
                     historyBuffer: firstHistoryBuffer
                 },
                 xaxes: [
-                    { position: 'bottom', autoscale: 'exact' }
+                    { position: 'bottom', autoScale: 'exact' }
                 ],
                 yaxes: [
-                    { position: 'left', autoscale: 'exact' }
+                    { position: 'left', autoScale: 'exact' }
                 ]
             };
         firstHistoryBuffer.push(10);
@@ -200,10 +200,10 @@ describe('A chart', function () {
                 xaxes: [{
                     min: 1.5,
                     max: 2.5,
-                    autoscale: 'none'
+                    autoScale: 'none'
                 }],
                 yaxis: {
-                    autoscale: 'exact'
+                    autoScale: 'exact'
                 }
             });
 
@@ -211,8 +211,8 @@ describe('A chart', function () {
             var yaxis = plot.getYAxes()[0];
             expect(yaxis.datamin).toEqual(32);
             expect(yaxis.datamax).toEqual(35);
-            expect(yaxis.autoscaledMin).toEqual(32);
-            expect(yaxis.autoscaledMax).toEqual(35);
+            expect(yaxis.autoScaledMin).toEqual(32);
+            expect(yaxis.autoScaledMax).toEqual(35);
         });
 
         it('scales for multiple dataseries', function () {
@@ -227,10 +227,10 @@ describe('A chart', function () {
                 xaxes: [{
                     min: 1.5,
                     max: 2.5,
-                    autoscale: 'none'
+                    autoScale: 'none'
                 }],
                 yaxis: {
-                    autoscale: 'exact'
+                    autoScale: 'exact'
                 }
             });
 
@@ -253,12 +253,12 @@ describe('A chart', function () {
                 xaxes: [{
                     min: 1.5,
                     max: 2.5,
-                    autoscale: 'none'
+                    autoScale: 'none'
                 }],
                 yaxes: [{
-                    autoscale: 'exact'
+                    autoScale: 'exact'
                 }, {
-                    autoscale: 'exact'
+                    autoScale: 'exact'
                 }
               ]
             });

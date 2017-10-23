@@ -106,7 +106,7 @@ Licensed under the MIT license.
     }
 
     function setYAxisRange(plot, yaxis) {
-        if (yaxis.direction !== 'y' || yaxis.options.autoscale === "none")
+        if (yaxis.direction !== 'y' || yaxis.options.autoScale === "none")
             return;
         var i, j, k, points, pointsLength, xmin, xmax, range, index,
             dataSeries = plot.getData(),
