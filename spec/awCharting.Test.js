@@ -105,7 +105,7 @@ describe('A chart', function () {
             xaxes: [{
                 min: 2.5,
                 max: 3.5,
-                autoscale: 'none'
+                autoScale: 'none'
             }]
         });
 

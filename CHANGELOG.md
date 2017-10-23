@@ -1,13 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/) 
-and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.0]
+### Changed
+- flot-charting renamed to flot-charting-plugin
+- Edge and Safari support
+- PhantomJS and IE are no longer supported
 
-## [0.2.1] - 2016-10-10
+## [0.2.1]
 ### Added
 - Changelog file.
 
 ### Changed
 - Example files renamed from charting to example.
+
+
+
+[1.0.0]: https://github.com/ni-kismet/flot-charting-plugin/compare/v0.2.1...v1.0.0
+[0.2.1]: https://github.com/ni-kismet/flot-charting-plugin/compare/v0.2.0...v0.2.1

@@ -6,6 +6,17 @@ var module;
 module.exports = function (config) {
     'use strict';
 
+    var browsersMatrix = {
+            'win': ['Firefox', 'Chrome', 'Edge'],
+            'linux': ['Firefox', 'Chrome'],
+            'mac': ['Safari', 'Firefox', 'Chrome']
+        },
+        isWin = /^win/.test(process.platform),
+        isLinux = /^linux/.test(process.platform),
+        isMac = /^darwin/.test(process.platform),
+        currentOSType = isWin ? 'win' : (isLinux ? 'linux' : 'mac'),
+        currentOSBrowsers = browsersMatrix[currentOSType];
+
     var coverage_sources = [
         'jquery.flot.historybuffer.js',
         'jquery.flot.segment-tree.js',
@@ -19,7 +30,7 @@ module.exports = function (config) {
         'jquery.js',
         'node_modules/ni-data-types/sources/niTimeStamp.js',
         'node_modules/ni-data-types/sources/niAnalogWaveform.js',
-        'node_modules/engineering-flot/dist/jquery.flot.js',
+        'node_modules/engineering-flot/dist/es5/jquery.flot.js',
         'lib/jsverify.standalone.js',
         'lib/jasmineHelpers2.js',
     ].concat(coverage_sources);
@@ -70,7 +81,7 @@ module.exports = function (config) {
 
         // start these browsers
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: ['PhantomJS', 'Firefox', 'Chrome'],
+        browsers: currentOSBrowsers,
 
 
         // Continuous Integration mode
@@ -79,7 +90,7 @@ module.exports = function (config) {
 
         // Concurrency level
         // how many browser should be started simultaneous
-        concurrency: 1
+        concurrency: Infinity
     };
 
     if (config.coverage) {
