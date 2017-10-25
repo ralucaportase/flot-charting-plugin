@@ -28,8 +28,7 @@ module.exports = function (config) {
     var sources = [
         'lib/cbuffer.js',
         'jquery.js',
-        'node_modules/ni-data-types/sources/niTimeStamp.js',
-        'node_modules/ni-data-types/sources/niAnalogWaveform.js',
+        'node_modules/ni-data-types/dist/es5-minified/ni-data-types.min.js',
         'node_modules/engineering-flot/dist/es5/jquery.flot.js',
         'lib/jsverify.standalone.js',
         'lib/jasmineHelpers2.js',
