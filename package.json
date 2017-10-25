@@ -1,6 +1,6 @@
 {
   "name": "flot-charting-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1-0",
   "description": "Flot charting plugin",
   "main": "dist/es5/query.flot.charting.js",
   "directories": {
